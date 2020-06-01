@@ -9,9 +9,9 @@ import (
 
 const registerEndpoint = "register"
 
-// receiveServiceRegister - a service sends a registration message to you - notify all other services in the system
-func receiveServiceRegister() {
-	logrus.Info("[receiveServiceRegister] register information received")
+// ReceiveServiceRegister - a service sends a registration message to you - notify all other services in the system
+func ReceiveServiceRegister() {
+	logrus.Info("[api.ReceiveServiceRegister] register information received")
 	newUser := UserInformation{ // info given (exec input)
 		UserID:           "sample",
 		CallbackEndpoint: "callback",
@@ -19,30 +19,32 @@ func receiveServiceRegister() {
 	}
 	payload, err := json.Marshal(newUser)
 	if err != nil {
-		logrus.Fatalf("[receiveServiceRegister] Error marshal newUser with error %s", err)
+		logrus.Fatalf("[api.ReceiveServiceRegister] Error marshal newUser with error %s", err)
 	}
 	for _, user := range Users {
 		if user.UserID != YourUserInformation.UserID {
-			_, err := RequestPOST(user.Endpoint, payload, "")
+			_, err := RequestPOST(user.Endpoint, string(payload), "")
 			if err != nil {
-				logrus.Fatalf("[receiveServiceRegister] Error sending post request with error %s", err)
+				logrus.Fatalf("[api.ReceiveServiceRegister] Error sending post request with error %s", err)
 			}
 		}
 	}
-	logrus.Info("[receiveServiceRegister] register information send to services")
+	logrus.Info("[api.ReceiveServiceRegister] register information send to services")
+	// TODO return userList
+	// TODO maybe send entire Users list (not only the new one -- in case of meh)
 }
 
-// registerToService - send a registration message containing user details to an another endpoint
-func registerToService() {
+// RegisterToService - send a registration message containing user details to an another endpoint
+func RegisterToService() {
 	endpoint := "http://localhost:8080" // info given (exec input)
 	// send YourUserInformation as a payload to the service to get your identification
 	payload, err := json.Marshal(YourUserInformation)
 	if err != nil {
-		logrus.Fatalf("[registerToService] Error marshal newUser with error %s", err)
+		logrus.Fatalf("[api.RegisterToService] Error marshal newUser with error %s", err)
 	}
-	_, err := RequestPOST(endpoint + "/" + registerEndpoint, payload, "")
+	_, err = RequestPOST(endpoint + "/" + registerEndpoint, string(payload), "")
 	if err != nil {
-		logrus.Fatalf("[registerToService] Error sending post request with error %s", err)
+		logrus.Fatalf("[api.RegisterToService] Error sending post request with error %s", err)
 	}
-	logrus.Info("[registerToService] register information send")
+	logrus.Info("[api.RegisterToService] register information send")
 }

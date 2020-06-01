@@ -6,15 +6,15 @@ import (
 )
 
 func main() {
-	logrus.Infof("Starting Container \n get environment variables")
+	logrus.Infof("[main] Starting Container \n get environment variables")
 	userID := os.Getenv("USERID")
 	endpoint := os.Getenv("ENDPOINT")
-	callbackEndpoint := "callback"
+	callbackEndpoint := endpoint + "election/callback" // TODO check this later
 	YourUserInformation = UserInformation{
 		UserID:           userID,
 		CallbackEndpoint: callbackEndpoint,
 		Endpoint:         endpoint,
 	}
-	logrus.Infof("Service Information set")
+	logrus.Infof("[main] Service Information set")
 	// TODO start api
 }

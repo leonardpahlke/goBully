@@ -2,15 +2,15 @@ package goBully
 
 // store all active users
 var YourUserInformation UserInformation
-var Users []UserInformation[]
+var Users []UserInformation
 
 // adds a user to the user pool
-func addUser(userInformation UserInformation) {
+func AddUser(userInformation UserInformation) {
 	Users = append(Users, userInformation)
 }
 
 // deletes a user from the user pool
-func deleteUser(userInformation UserInformation) {
+func DeleteUser(userInformation UserInformation) {
 	for i, user := range Users {
 		if user.UserID == userInformation.UserID {
 			// delete user from the list

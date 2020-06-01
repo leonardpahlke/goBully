@@ -6,7 +6,7 @@ type ElectionInformation struct {
 	Payload   string                 `json:"payload"`   // the payload for the current state of the algorithm
 	Callback  string                 `json:"callback"`  // uri of the user sending this request
 	Job       ElectionJobInformation `json:"job"`
-	Message   string                 `json:"message"` // something you want to tell the other one
+	Message   string                 `json:"message"`   // something you want to tell the other one
 }
 
 type ElectionJobInformation struct {
@@ -27,9 +27,18 @@ type ElectionCallbackInformation struct {
 	Message   string                 `json:"message"` // something you want to tell the other one
 }
 
+// Scenario specific types
+
 // USER (only for this scenario)
 type UserInformation struct {
 	UserID string `json:"userID"`
 	CallbackEndpoint string `json:"callbackEndpoint"`
 	Endpoint string `json:"endpoint"`
+}
+
+// control callbacks after sending an election message
+type CallbackResponse struct {
+	userID string               // username as an identifier
+	callbackChannel chan string // channel notify after receiving a message
+	calledBack bool 		    // tells if a user send a message back
 }
