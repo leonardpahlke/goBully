@@ -23,6 +23,7 @@ func ReceiveServiceRegister() {
 	}
 	for _, user := range Users {
 		if user.UserID != YourUserInformation.UserID {
+			// TODO maybe send entire Users list (not only the new one -- in case of meh)
 			_, err := RequestPOST(user.Endpoint, string(payload), "")
 			if err != nil {
 				logrus.Fatalf("[api.ReceiveServiceRegister] Error sending post request with error %s", err)
@@ -31,7 +32,6 @@ func ReceiveServiceRegister() {
 	}
 	logrus.Info("[api.ReceiveServiceRegister] register information send to services")
 	// TODO return userList
-	// TODO maybe send entire Users list (not only the new one -- in case of meh)
 }
 
 // RegisterToService - send a registration message containing user details to an another endpoint

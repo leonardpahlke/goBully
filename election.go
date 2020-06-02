@@ -115,8 +115,16 @@ func SendElectionMessage(electionInformation ElectionInformation, user UserInfor
 	// send ElectionMessageReceived to the endpoint
 	logrus.Info("[election.SendElectionMessage] send election message to user: " + user.UserID)
 	reponse, err := RequestPOST(user.Endpoint + "/" + electionEndpoint, string(payload), "") // TODO response? callback?
+	if err != nil {
+		logrus.Fatalf("[election.SendElectionMessage] Error send post request with error %s", err)
+	}
 	// check if user answered and delete user from callbacks if so
 	// otherwise delete user form user list and notify others
+	// TODO TODO TODO
+	// wait period of time
+	// check if a service calledback yet
+	// 	YES: - aboard other channels, - clear list (other service will take lead)
+	// 	NO : send coordinator message
 }
 
 // SendCoordinatorMessages POST (Hero -> Hero)
@@ -147,7 +155,7 @@ func SendCoordinatorMessages(electionInformation ElectionInformation) {
 
 // election message received TODO
 func ElectionMessageReceived(electionInformation ElectionInformation) {
-	// get all users
+	logrus.Infof("[election.ElectionMessageReceived] election notification received, filter users")
 	// filter user after userID > yours
 	var selectedUsers []UserInformation
 	for _, user := range Users {
@@ -157,14 +165,15 @@ func ElectionMessageReceived(electionInformation ElectionInformation) {
 	}
 	// if filtered list is empty - you have the highest ID and win
 	if len(selectedUsers) == 0 {
+		logrus.Infof("[election.ElectionMessageReceived] no users found with a higher userId")
 		SendCoordinatorMessages(electionInformation)
+	} else {
+		logrus.Infof("[election.ElectionMessageReceived] send selected-users election message")
+		for _, user := range selectedUsers {
+			go SendElectionMessage(electionInformation, user)
+		}
+		logrus.Infof("[election.ElectionMessageReceived] election messages send")
 	}
-
-	// send user election message
-	// wait period of time
-	// check if a service calledback yet
-	// 	YES: - aboard other channels, - clear list (other service will take lead)
-	// 	NO : send coordinator message
 }
 
 // coordinator message received - new coordinator found
