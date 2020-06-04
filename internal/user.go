@@ -1,8 +1,8 @@
-package goBully
+package internal
 
 // store all active users
 var YourUserInformation UserInformation
-var Users []UserInformation
+var Users []UserInformation // TODO YourUserInformation should be also in there
 
 // adds a user to the user pool
 func AddUser(userInformation UserInformation) {
@@ -19,4 +19,10 @@ func DeleteUser(userInformation UserInformation) {
 			break
 		}
 	}
+}
+
+// STRUCT'S
+type UserInformation struct {
+	UserID string `json:"userID"`
+	Endpoint string `json:"endpoint"`
 }

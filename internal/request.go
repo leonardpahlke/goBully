@@ -1,4 +1,4 @@
-package goBully
+package internal
 
 import (
 	"github.com/sirupsen/logrus"
