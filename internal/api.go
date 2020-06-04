@@ -50,7 +50,7 @@ func StartAPI(endpoint string, port string) {
 		c.String(200, msg)
 	})
 
-	// TODO TRIGGER UNREGISTER FROM SERVICE'S
+	// TODO TRIGGER UNREGISTER FROM SERVICE'S 
 	r.POST("/un-register", func(c *gin.Context){
 		// unregister yourself from other user services (gracefully shutdown)
 	})
@@ -58,7 +58,6 @@ func StartAPI(endpoint string, port string) {
 	// TODO ELECTION
 	r.POST(ElectionRoute, func(c *gin.Context){
 		// start election algorithm - get a coordinator
-
 	})
 
 	err := r.Run(":" + port)
