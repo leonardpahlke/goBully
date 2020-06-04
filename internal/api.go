@@ -58,6 +58,7 @@ func StartAPI(endpoint string, port string) {
 	// TODO ELECTION
 	r.POST(ElectionRoute, func(c *gin.Context){
 		// start election algorithm - get a coordinator
+
 	})
 
 	err := r.Run(":" + port)
@@ -139,7 +140,7 @@ func RegisterToService(ip string ) string {
 	if err != nil {
 		logrus.Fatalf("[api.RegisterToService] Error marshal newUser with error %s", err)
 	}
-	_, err = RequestPOST(endpoint +RegisterRoute, string(payload), "")
+	_, err = RequestPOST(endpoint + RegisterRoute, string(payload), "")
 	if err != nil {
 		logrus.Fatalf("[api.RegisterToService] Error sending post request with error %s", err)
 	}
