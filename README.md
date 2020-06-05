@@ -24,33 +24,38 @@ For more information, see the code comments and also the Swagger documentation
 
 ## swagger api
 
+[Swagger Doc](https://github.com/leonardpahlke/goBully/blob/master/api/swagger.yml)
+
+Update swagger yml
+
 `swagger generate spec -o ./api/swagger.yml --scan-models`
 
-## Folder Structure
+## Project folder structure
 
 ```
 ── goBully
 ├── api
-│   └── ...                     // swagger files..
+│   └── swagger.yml             // swagger api dcumentation
 ├── assets
-│   └── ...
+│   └── ...                     // pictures and stuff
 ├── build
-│   ├── Dockerfile
-│   └── docker-compose.yml      // run szenario
+│   ├── Dockerfile              // docker container script
+│   └── docker-compose.yml      // dockercompose run szenario
 ├── cmd
 │   └── main.go                 // starting point of the application
 ├── internal
-│   ├── api
-│   │   ├── request.go          // rest http calls
-│   │   └── rest.go             // api setup - endpoints
 │   ├── election
 │   │   ├── election.go         // election private functions
 │   │   └── election_client.go  // election public functions
+│   ├── identity
+│   │   └── user.go             // user definition
 │   └── service
 │       ├── register.go         // user register workflow
-│       └── user.go             // user definition
+│       └── rest.go             // api setup - endpoints
 ├── .gitignore
-├── go.mod                      // project namespace
-├── go.sum                      // project imports
+│   └── request.go              // rest http calls
+├── .gitignore
+├── go.mod                      // go module information
+├── go.sum                      // go module libary imports
 └── README.md
 ```
