@@ -1,0 +1,20 @@
+paths:
+  /materials:
+    post:
+      consumes:
+      - application/json
+      description: Add a new material
+      operationId: addMaterial
+      parameters:
+      - description: New material
+        in: body
+        name: material
+        required: true
+        schema:
+          $ref: '#/definitions/MaterialCreateDTO'
+      responses:
+        "201":
+          description: Successfully created material
+      tags:
+      - materials
+swagger: "2.0"

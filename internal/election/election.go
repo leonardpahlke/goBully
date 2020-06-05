@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"gobully/internal/api"
-	"gobully/internal/service"
+	id "gobully/internal/identity"
+	"gobully/pkg"
 	"time"
 )
 
@@ -24,7 +24,7 @@ const serviceRespondMessageReceived = "msg" // service answered
 // store service callback here (empty array)
 var callbacks []callbackResponse
 
-/** METHODS overview:
+/* METHODS overview:
 	- receiveMessage()             // get a message from a service (election, answer, CoordinatorUserId)
 	- sendElectionMessage()        // send a service an election message and wait for response
 	- sendCoordinatorMessages()    // send a service that you are the CoordinatorUserId now
@@ -38,7 +38,7 @@ var callbacks []callbackResponse
 receiveMessage POST (Hero <- Hero) - receive message
  */
 func receiveMessage(electionInformationString []byte) {
-	var electionInformation informationElection
+	var electionInformation InformationElection
 	err := json.Unmarshal(electionInformationString, &electionInformation)
 	if err != nil {
 		logrus.Fatalf("[election.receiveMessage] Error unmarshal election message with error %s", err)
@@ -56,8 +56,8 @@ func receiveMessage(electionInformationString []byte) {
 /*
 sendElectionMessage POST (Hero -> Hero) TODO
  */
-func sendElectionMessage(electionInformation informationElection, user service.UserInformation) {
-	myElectionInformation := informationElection{
+func sendElectionMessage(electionInformation InformationElection, user id.InformationUser) {
+	myElectionInformation := InformationElection{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   electionMessage,
 		Job:       electionInformation.Job,
@@ -67,25 +67,25 @@ func sendElectionMessage(electionInformation informationElection, user service.U
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error marshal electionCoordinatorMessage with error %s", err)
 	}
-	// store user as a new entry in callbacks
+	// store identity as a new entry in callbacks
 	callbacks = append(callbacks, callbackResponse{
 		userID:          user.UserId,
 		callbackChannel: make(chan string),
 		calledBack:      false,
 	})
 	// send messageReceivedElection to the endpoint
-	logrus.Info("[election.sendElectionMessage] send election message to user: " + user.UserId)
-	res, err := api.RequestPOST(user.Endpoint +RouteElection, string(payload), "") // TODO wait some time and trigger channel
+	logrus.Info("[election.sendElectionMessage] send election message to identity: " + user.UserId)
+	res, err := pkg.RequestPOST(user.Endpoint +RouteElection, string(payload), "") // TODO wait some time and trigger channel
 
-	// check if user answered and delete user from callbacks if so
-	// otherwise delete user form user list and notify others
-	// TODO TODO TODO
+	// check if identity answered and delete identity from callbacks if so
+	// otherwise delete identity form identity list and notify others
+	// TODO
 	// wait period of time
 	// check if a service called back yet
 	// 	YES: - aboard other channels, - clear list (other service will take lead)
 	// 	NO : send CoordinatorUserId message
 
-	//informationElection{
+	//InformationElection{
 	//	Algorithm: electionInformation.Algorithm,
 	//	Payload:   answerMessage,
 	//	User:      YourUserInformation.UserId,
@@ -96,7 +96,7 @@ func sendElectionMessage(electionInformation informationElection, user service.U
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error send post request with error %s", err)
 	}
-	var electionInfoResponse informationElection
+	var electionInfoResponse InformationElection
 	err = json.Unmarshal(res, electionInfoResponse)
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error Unmarshal electionInfoResponse with error %s", err)
@@ -106,23 +106,23 @@ func sendElectionMessage(electionInformation informationElection, user service.U
 /*
 sendCoordinatorMessages POST (Hero -> Hero)
  */
-func sendCoordinatorMessages(electionInformation informationElection) {
+func sendCoordinatorMessages(electionInformation InformationElection) {
 	// get all users and send a everybody messageReceivedCoordinator
-	electionCoordinatorMessage := informationElection{
+	electionCoordinatorMessage := InformationElection{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   coordinatorMessage,
 		Job:       electionInformation.Job,
-		Message:   service.YourUserInformation.UserId, // TODO check if this is the right spot - later
+		Message:   id.YourUserInformation.UserId, // TODO check if this is the right spot - later
 	}
 	payload, err := json.Marshal(electionCoordinatorMessage)
 	if err != nil {
 		logrus.Fatalf("[election.sendCoordinatorMessages] Error marshal electionCoordinatorMessage with error %s", err)
 	}
 	// send messageReceivedCoordinator to users
-	for _, user := range service.Users {
-		_, err := api.RequestPOST(user.Endpoint +RouteElection, string(payload), "")
+	for _, user := range id.Users {
+		_, err := pkg.RequestPOST(user.Endpoint +RouteElection, string(payload), "")
 		if err != nil {
-			logrus.Fatalf("[election.sendCoordinatorMessages] Error sending post request to user with error %s", err)
+			logrus.Fatalf("[election.sendCoordinatorMessages] Error sending post request to identity with error %s", err)
 		}
 	}
 	logrus.Info("[election.sendCoordinatorMessages] CoordinatorUserId message send to users")
@@ -134,7 +134,7 @@ func sendCoordinatorMessages(electionInformation informationElection) {
 messageReceivedAnswer POST (Hero <- Hero) - receive callback message
 get a response back from a service after sending a election message
  */
-func messageReceivedAnswer(electionInformation informationElection) {
+func messageReceivedAnswer(electionInformation InformationElection) {
 	// find callback type in var callbacks
 	for _, elem := range callbacks {
 		if elem.userID == electionInformation.User {
@@ -151,12 +151,12 @@ func messageReceivedAnswer(electionInformation informationElection) {
 /*
 election message received
  */
-func messageReceivedElection(electionInformation informationElection) {
+func messageReceivedElection(electionInformation InformationElection) {
 	logrus.Infof("[election.messageReceivedElection] election notification received, filter users")
-	// filter user after userID > yours
-	var selectedUsers []service.UserInformation
-	for _, user := range service.Users {
-		if user.UserId > service.YourUserInformation.UserId {
+	// filter identity after userID > yours
+	var selectedUsers []id.InformationUser
+	for _, user := range id.Users {
+		if user.UserId > id.YourUserInformation.UserId {
 			selectedUsers = append(selectedUsers, user)
 		}
 	}
@@ -175,7 +175,7 @@ func messageReceivedElection(electionInformation informationElection) {
 /*
 CoordinatorUserId message received - new CoordinatorUserId found
  */
-func messageReceivedCoordinator(electionInformation informationElection) {
+func messageReceivedCoordinator(electionInformation InformationElection) {
 	// close all running elections
 	for _, elem := range callbacks {
 		elem.callbackChannel <- serviceRespondAboard // tell election services to abroad process
@@ -187,28 +187,9 @@ func messageReceivedCoordinator(electionInformation informationElection) {
 }
 
 /* STRUCT */
-// TODO description
-type informationElection struct {
-	Algorithm string         `json:"algorithm"` // name of the algorithm used
-	Payload   string         `json:"payload"`   // the payload for the current state of the algorithm
-	User      string         `json:"user"`  // uri of the user sending this request
-	Job       informationJob `json:"job"`
-	Message   string         `json:"message"`   // something you want to tell the other one
-}
-// TODO description
-type informationJob struct {
-	Id       string `json:"id"`       // some identity choosen by the initiator to identify this request
-	Task     string `json:"task"`     // uri to the task to accomplish
-	Resource string `json:"resource"` // uri or url to resource where actions are required
-	Method   string `json:"method"`   // method to take – if already known
-	Data     string `json:"data"`     // data to use/post for the task
-	Callback string `json:"callback"` // an url where the initiator can be reached with the results/token
-	Message  string `json:"message"`  // something you want to tell the other one
-}
-
 // control callbacks after sending an election message
 type callbackResponse struct {
 	userID string               // username as an identifier
 	callbackChannel chan string // channel notify after receiving a message
-	calledBack bool 		    // tells if a user send a message back
+	calledBack bool 		    // tells if a identity send a message back
 }

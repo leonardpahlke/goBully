@@ -1,4 +1,4 @@
-package api
+package pkg
 
 import (
 	"github.com/sirupsen/logrus"

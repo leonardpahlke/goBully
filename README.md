@@ -6,6 +6,8 @@ container with api for election and discovery
 
 create multiple containers with docker-compose
 
+`swagger generate spec -o ./api/swagger.yml --scan-models`
+
 **election.go**
 
 	- receiveMessage()             // get a message from a service (election, answer, CoordinatorUserId)
