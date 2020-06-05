@@ -1,10 +1,11 @@
 package main
 
 import (
+	"gobully/internal/api"
+	"gobully/internal/service"
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"gobully/internal"
 )
 
 func main() {
@@ -13,16 +14,18 @@ func main() {
 	userID := os.Getenv("USERID")
 	port := os.Getenv("PORT")
 	host := os.Getenv("HOST")
-
+	// your user service endpoint
 	endpoint := "http://" + host + ":" + port
 
 	// set user information
-	internal.YourUserInformation = internal.UserInformation{
-		UserID:           userID,
-		Endpoint:         endpoint,
+	service.YourUserInformation = service.UserInformation{
+		UserId:   userID,
+		Endpoint: endpoint,
 	}
+	// add yourself to user list
+	service.AddUser(service.YourUserInformation)
 
 	// start api
 	logrus.Infof("[main] Service Information set, starting api")
-	internal.StartAPI(endpoint, port)
+	api.StartAPI(endpoint, port)
 }
