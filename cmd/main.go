@@ -18,7 +18,7 @@ func main() {
 	endpoint := "http://" + host + ":" + port
 
 	// set identity information
-	identity.YourUserInformation = identity.InformationUser{
+	identity.YourUserInformation = identity.InformationUserDTO{
 		UserId:   userID,
 		Endpoint: endpoint,
 	}
@@ -27,5 +27,5 @@ func main() {
 
 	// start api
 	logrus.Infof("[main] Service Information set, starting api")
-	service.StartAPI(endpoint, port)
+	service.StartAPI(port)
 }

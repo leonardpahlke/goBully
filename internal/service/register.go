@@ -10,99 +10,140 @@ import (
 
 // static routes (service discovery would set these vars in a prod application)
 const RegisterRoute = "/register"
+const SendRegisterRoute = "/sendregister"
+const UnRegisterRoute = "/unregister"
+const SendUnRegisterRoute = "/sendunregister"
 
 /*
-TODO ReceiveServiceRegister - description
+receiveServiceRegister - get user credentials from a new user and send them to the other connected users if new user send data directly to you
  */
-func ReceiveServiceRegister(serviceRegisterInfo RegisterInfo) RegisterResponse {
-	logrus.Info("[service.ReceiveServiceRegister] register information received")
+func receiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterResponseDTO {
+	logrus.Info("[service.receiveServiceRegister] register information received")
 	// check if sending id is also new id (-> do we have to notify other services?)
 	distributingUserIsNewUser := serviceRegisterInfo.DistributingUserId == serviceRegisterInfo.NewUserId
 	// create newUser information
-	newUser := id.InformationUser{ // info given (exec input)
+	newUser := id.InformationUserDTO{ // info given (exec input)
 		UserId:   serviceRegisterInfo.NewUserId,
 		Endpoint: serviceRegisterInfo.Endpoint,
 	}
 	// add new id to users
-	id.Users = append(id.Users, newUser)
+	id.AddUser(newUser)
 	// send other users the newUser information
 	if distributingUserIsNewUser {
 		payload, err := json.Marshal(newUser)
 		if err != nil {
-			logrus.Fatalf("[service.ReceiveServiceRegister] Error marshal newUser with error %s", err)
+			logrus.Fatalf("[service.receiveServiceRegister] Error marshal newUser with error %s", err)
 		}
 		for _, user := range id.Users {
 			if user.UserId != id.YourUserInformation.UserId {
 				// IDEA we could wait if the other service answers and kick him out if he doesn't TODO do that?
-				res, err := pkg.RequestPOST(user.Endpoint +RegisterRoute, string(payload), "")
+				res, err := pkg.RequestPOST(user.Endpoint + RegisterRoute, string(payload), "")
 				if err != nil {
-					logrus.Fatalf("[service.ReceiveServiceRegister] Error sending post request with error %s", err)
+					logrus.Fatalf("[service.receiveServiceRegister] Error sending post request with error %s", err)
 				}
-				registerResponse := RegisterResponse{}
+				registerResponse := RegisterResponseDTO{}
 				err = json.Unmarshal(res, registerResponse)
 				if err != nil {
-					logrus.Fatalf("[service.ReceiveServiceRegister] Error Unmarshal post response with error %s", err)
+					logrus.Fatalf("[service.receiveServiceRegister] Error Unmarshal post response with error %s", err)
 				}
-				logrus.Info("[service.ReceiveServiceRegister] received message " + registerResponse.Message)
+				logrus.Info("[service.receiveServiceRegister] received message " + registerResponse.Message)
 			}
 		}
-		logrus.Info("[service.ReceiveServiceRegister] register information send to services")
-		return RegisterResponse{
+		logrus.Info("[service.receiveServiceRegister] register information send to services")
+		return RegisterResponseDTO{
 			Message:     "all registered users that I have noticed. I have send your information to the others..",
 			UserIdInfos: id.Users,
 		}
 	}
-	return RegisterResponse{
+	return RegisterResponseDTO{
 		Message: id.YourUserInformation.UserId + " here, I have added new id " + newUser.UserId + " to my id pool",
 		// IDEA we could sync users with each time post request via sending Users
 		// (we do not do that because of performance concerns)
 		// (we could only send our information which should do the job in the end as well - but meh)
-		UserIdInfos: []id.InformationUser{},
+		UserIdInfos: []id.InformationUserDTO{},
 	}
 }
 
 /*
-RegisterToService - send a registration message containing id details to an another endpoint
+registerToService - send a registration message containing id details to an another endpoint
  */
-func RegisterToService(ip string ) string {
+func registerToService(ip string ) string {
 	endpoint := "http://" + ip
 	// send YourUserInformation as a payload to the service to get your identification
-	payload, err := json.Marshal(RegisterInfo{
+	payload, err := json.Marshal(RegisterInfoDTO{
 		DistributingUserId: id.YourUserInformation.UserId,
 		NewUserId:          id.YourUserInformation.UserId,
 		Endpoint:           id.YourUserInformation.Endpoint,
 	})
 	if err != nil {
-		logrus.Fatalf("[service.RegisterToService] Error marshal newUser with error %s", err)
+		logrus.Fatalf("[service.registerToService] Error marshal newUser with error %s", err)
 	}
 	res, err := pkg.RequestPOST(endpoint + RegisterRoute, string(payload), "")
 	if err != nil {
-		logrus.Fatalf("[service.RegisterToService] Error sending post request with error %s", err)
+		logrus.Fatalf("[service.registerToService] Error sending post request with error %s", err)
 	}
-	var registerResponse RegisterResponse
+	var registerResponse RegisterResponseDTO
 	err = json.Unmarshal(res, &registerResponse)
 	if err != nil {
-		logrus.Fatalf("[service.RegisterToService] Error Unmarshal registerResponse with error %s", err)
+		logrus.Fatalf("[service.registerToService] Error Unmarshal registerResponse with error %s", err)
 	}
 	// set Users with all UserIdInfos (yours included)
 	id.Users = registerResponse.UserIdInfos
-	logrus.Info("[service.RegisterToService] register information send and id info set, starting election, ...")
+	logrus.Info("[service.registerToService] register information send and id info set, starting election, ...")
 	election.StartElectionAlgorithm()
-	logrus.Info("[service.RegisterToService] finished election coordinator: " + election.CoordinatorUserId)
+	logrus.Info("[service.registerToService] finished election coordinator: " + election.CoordinatorUserId)
 	return "ok"
 }
 
-// TODO seed register (without election algorithm)
 
-/* STRUCT */
-// object sending id service to register yourself
-type RegisterInfo struct {
-	DistributingUserId string `json:"distributing_user_id"` // id sending new id information (new userId or some other userId)
-	NewUserId string `json:"new_user_id"`                   // new id id
-	Endpoint  string `json:"endpoint"`                      // new id endpoint
+/*
+unregisterUserFromYourUserList - unregister (without election algorithm)
+ */
+func unregisterUserFromYourUserList(userInformation id.InformationUserDTO) bool {
+	logrus.Info("[service.unregisterUserFromYourUserList] user: " + userInformation.UserId)
+	return id.DeleteUser(userInformation)
 }
+
+/*
+sendUnregisterUserFromYourUserList - unregister from all other user services
+*/
+func sendUnregisterUserFromYourUserList() bool {
+	logrus.Info("[service.sendUnregisterUserFromYourUserList] sending POST messages")
+	payload, err := json.Marshal(id.YourUserInformation)
+	if err != nil {
+		logrus.Fatalf("[service.sendUnregisterUserFromYourUserList] Error Unmarshal YourUserInformation with error %s", err)
+	}
+	for _, user := range id.Users {
+		_, err = pkg.RequestPOST(user.Endpoint + UnRegisterRoute, string(payload), "")
+		if err != nil {
+			logrus.Fatalf("[service.sendUnregisterUserFromYourUserList] Error RequestPOST with error %s", err)
+		}
+	}
+	logrus.Info("[service.sendUnregisterUserFromYourUserList] POST messages send")
+	return true
+}
+
+// object sending id service to register yourself
+// swagger:model
+type RegisterInfoDTO struct {
+	// id sending new id information (new userId or some other userId)
+	// required: true
+	DistributingUserId string `json:"distributing_user_id"`
+	// new userId id, check if Distributing user is also new one to notify others if so
+	// required: true
+	NewUserId string `json:"new_user_id"`
+	// new userId endpoint
+	// required: true
+	Endpoint  string `json:"endpoint"`
+}
+
 // response object after register to id service
-type RegisterResponse struct {
-	Message string                   `json:"message"`       // dummy message to print response
-	UserIdInfos []id.InformationUser `json:"user_id_infos"` // all registered users
+// swagger:model
+type RegisterResponseDTO struct {
+	// dummy message to print response
+	// required: true
+	Message string                   `json:"message"`
+	// all registered users
+	// required: true
+	UserIdInfos []id.InformationUserDTO `json:"user_id_infos"`
 }

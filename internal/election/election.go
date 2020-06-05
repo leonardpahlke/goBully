@@ -38,7 +38,7 @@ var callbacks []callbackResponse
 receiveMessage POST (Hero <- Hero) - receive message
  */
 func receiveMessage(electionInformationString []byte) {
-	var electionInformation InformationElection
+	var electionInformation InformationElectionDTO
 	err := json.Unmarshal(electionInformationString, &electionInformation)
 	if err != nil {
 		logrus.Fatalf("[election.receiveMessage] Error unmarshal election message with error %s", err)
@@ -56,8 +56,8 @@ func receiveMessage(electionInformationString []byte) {
 /*
 sendElectionMessage POST (Hero -> Hero) TODO
  */
-func sendElectionMessage(electionInformation InformationElection, user id.InformationUser) {
-	myElectionInformation := InformationElection{
+func sendElectionMessage(electionInformation InformationElectionDTO, user id.InformationUserDTO) {
+	myElectionInformation := InformationElectionDTO{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   electionMessage,
 		Job:       electionInformation.Job,
@@ -85,7 +85,7 @@ func sendElectionMessage(electionInformation InformationElection, user id.Inform
 	// 	YES: - aboard other channels, - clear list (other service will take lead)
 	// 	NO : send CoordinatorUserId message
 
-	//InformationElection{
+	//InformationElectionDTO{
 	//	Algorithm: electionInformation.Algorithm,
 	//	Payload:   answerMessage,
 	//	User:      YourUserInformation.UserId,
@@ -96,7 +96,7 @@ func sendElectionMessage(electionInformation InformationElection, user id.Inform
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error send post request with error %s", err)
 	}
-	var electionInfoResponse InformationElection
+	var electionInfoResponse InformationElectionDTO
 	err = json.Unmarshal(res, electionInfoResponse)
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error Unmarshal electionInfoResponse with error %s", err)
@@ -106,9 +106,9 @@ func sendElectionMessage(electionInformation InformationElection, user id.Inform
 /*
 sendCoordinatorMessages POST (Hero -> Hero)
  */
-func sendCoordinatorMessages(electionInformation InformationElection) {
+func sendCoordinatorMessages(electionInformation InformationElectionDTO) {
 	// get all users and send a everybody messageReceivedCoordinator
-	electionCoordinatorMessage := InformationElection{
+	electionCoordinatorMessage := InformationElectionDTO{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   coordinatorMessage,
 		Job:       electionInformation.Job,
@@ -134,7 +134,7 @@ func sendCoordinatorMessages(electionInformation InformationElection) {
 messageReceivedAnswer POST (Hero <- Hero) - receive callback message
 get a response back from a service after sending a election message
  */
-func messageReceivedAnswer(electionInformation InformationElection) {
+func messageReceivedAnswer(electionInformation InformationElectionDTO) {
 	// find callback type in var callbacks
 	for _, elem := range callbacks {
 		if elem.userID == electionInformation.User {
@@ -151,10 +151,10 @@ func messageReceivedAnswer(electionInformation InformationElection) {
 /*
 election message received
  */
-func messageReceivedElection(electionInformation InformationElection) {
+func messageReceivedElection(electionInformation InformationElectionDTO) {
 	logrus.Infof("[election.messageReceivedElection] election notification received, filter users")
 	// filter identity after userID > yours
-	var selectedUsers []id.InformationUser
+	var selectedUsers []id.InformationUserDTO
 	for _, user := range id.Users {
 		if user.UserId > id.YourUserInformation.UserId {
 			selectedUsers = append(selectedUsers, user)
@@ -175,7 +175,7 @@ func messageReceivedElection(electionInformation InformationElection) {
 /*
 CoordinatorUserId message received - new CoordinatorUserId found
  */
-func messageReceivedCoordinator(electionInformation InformationElection) {
+func messageReceivedCoordinator(electionInformation InformationElectionDTO) {
 	// close all running elections
 	for _, elem := range callbacks {
 		elem.callbackChannel <- serviceRespondAboard // tell election services to abroad process

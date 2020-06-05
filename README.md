@@ -1,12 +1,14 @@
 # goBully
 
-docker container as users
+This project implements the bully algorithm with docker containers. 
+Several containers are served, each of which is accessible with a rest API. 
+For more information, see the code comments and also the Swagger documentation 
 
-container with api for election and discovery
+**Features**
 
-create multiple containers with docker-compose
-
-`swagger generate spec -o ./api/swagger.yml --scan-models`
+- docker container as users
+- container with api for election and discovery
+- create multiple containers with docker-compose
 
 **election.go**
 
@@ -19,6 +21,10 @@ create multiple containers with docker-compose
 	- messageReceivedCoordinator() // handle coordinator message
 
 ![goBully](assets/goBully.jpg)
+
+## swagger api
+
+`swagger generate spec -o ./api/swagger.yml --scan-models`
 
 ## Folder Structure
 

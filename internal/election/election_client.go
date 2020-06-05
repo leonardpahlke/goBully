@@ -23,22 +23,48 @@ func HandleElectionMessage() {
 	// TODO
 }
 
-/* STRUCT */
 // election state information
-type InformationElection struct {
-	Algorithm string         `json:"algorithm"` // name of the algorithm used
-	Payload   string         `json:"payload"`   // the payload for the current state of the algorithm
-	User      string         `json:"identity"`      // uri of the identity sending this request
-	Job       InformationJob `json:"job"`
-	Message   string         `json:"message"`   // something you want to tell the other one
+// swagger:model
+type InformationElectionDTO struct {
+	// name of the algorithm used
+	// required: true
+	Algorithm string            `json:"algorithm"`
+	// the payload for the current state of the algorithm
+	// required: true
+	Payload   string            `json:"payload"`
+	// uri of the identity sending this request
+	// required: true
+	User      string            `json:"identity"`
+	// jon information in InformationJobDTO
+	// required: true
+	Job       InformationJobDTO `json:"job"`
+	// something you want to tell the other one
+	// required: true
+	Message   string            `json:"message"`
 }
+
 // election job details
-type InformationJob struct {
-	Id       string `json:"id"`       // some identity choosen by the initiator to identify this request
-	Task     string `json:"task"`     // uri to the task to accomplish
-	Resource string `json:"resource"` // uri or url to resource where actions are required
-	Method   string `json:"method"`   // method to take – if already known
-	Data     string `json:"data"`     // data to use/post for the task
-	Callback string `json:"callback"` // an url where the initiator can be reached with the results/token
-	Message  string `json:"message"`  // something you want to tell the other one
+// swagger:model
+type InformationJobDTO struct {
+	// some identity chosen by the initiator to identify this request
+	// required: true
+	Id       string `json:"id"`
+	// uri to the task to accomplish
+	// required: true
+	Task     string `json:"task"`
+	// uri or url to resource where actions are required
+	// required: true
+	Resource string `json:"resource"`
+	// method to take – if already known
+	// required: true
+	Method   string `json:"method"`
+	// data to use/post for the task
+	// required: true
+	Data     string `json:"data"`
+	// an url where the initiator can be reached with the results/token
+	// required: true
+	Callback string `json:"callback"`
+	// something you want to tell the other one
+	// required: true
+	Message  string `json:"message"`
 }
