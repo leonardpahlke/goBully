@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+// TODO remove token and other useless stuff
+
 // RequestGET - send http get request
 func RequestGET(url string, token string) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
