@@ -24,13 +24,32 @@ may change
 
 **Bully Algorithm Structure** - `internal/election/election.go`
 
-	- receiveMessage()             // get a message from a service (election, answer, CoordinatorUserId)
-	- sendElectionMessage()        // send a service an election message and wait for response
-	- sendCoordinatorMessages()    // send a service that you are the CoordinatorUserId now
+	- ReceiveMessage()             // get a message from a service (election, coordinator)
+	- messageReceivedElection()    // handle incoming election message
+	- sendElectionMessage()        // send a election message to another user
       ---------------------
-	- messageReceivedAnswer()      // handle answer messages
-	- messageReceivedElection()    // handle election messages
-	- messageReceivedCoordinator() // handle coordinator messages
+	- messageReceivedCoordinator() // set local coordinator reference with incoming details
+	- sendCoordinatorMessages()    // send coordinator messages to other users
+	
+Election Message received:
+```
+messageReceivedElection()
+1. filter users to send election messages to (UserID > YourID)
+2. if |filtered users| <= 0
+   	YES: 2.1 you have the highest ID and win - send coordinatorMessages - exit
+   	NO : 2.2 transform message and create POST payload
+		 2.3 add callback information to local callbackList
+         2.4 GO - sendElectionMessage()
+            2.4.1 send POST request to client
+            2.4.2 if response is OK check client callback
+         2.5 wait a few seconds (enough time users can answer request)
+         2.6 Sort users who have called back and who are not
+         2.7 if |answered users| <= 0
+			2.7.1 YES: send coordinatorMessages - exit
+			2.7.2 NO : remove all users how didn't answered from userList
+         2.8 clear callback list
+3. send response back (answer)
+```
 
 ![goBully](assets/goBully.jpg)
 

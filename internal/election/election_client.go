@@ -4,8 +4,10 @@ package election
 
 // API Endpoints
 const RouteElection = "/election"
+
 // TODO - print info logs - maybe also in a config file defined
 // var Verbose = true
+
 // current CoordinatorUserId
 var CoordinatorUserId = ""
 
@@ -13,13 +15,6 @@ var CoordinatorUserId = ""
 start election algorithm (your initiative)
  */
 func StartElectionAlgorithm() {
-	// TODO
-}
-
-/*
-pass election message into logic and handle display
- */
-func HandleElectionMessage() {
 	// TODO
 }
 

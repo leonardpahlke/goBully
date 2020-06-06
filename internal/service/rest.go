@@ -34,7 +34,7 @@ import (
 
 const DefaultSuccessMessage = "successful operation"
 const DefaultErrorMessage = "error in operation"
-const DefaultNotAvailableMessage = "operation not available"
+// const DefaultNotAvailableMessage = "operation not available"
 
 func StartAPI(port string) {
 	// create api server - gin framework
@@ -217,6 +217,6 @@ func adapterElectionMessage(c *gin.Context) {
 	if err != nil {
 		logrus.Fatalf("[service.adapterElectionMessage] Error marshal electionInformation with error %s", err)
 	}
-	// TODO election
-	c.String(403, DefaultNotAvailableMessage)
+	electionInformationResponse := election.ReceiveMessage(electionInformation)
+	c.JSON(200, electionInformationResponse)
 }
