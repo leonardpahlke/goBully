@@ -1,9 +1,12 @@
 package election
 
+import "github.com/sirupsen/logrus"
+
 // Public function to interact with election
 
 // API Endpoints
 const RouteElection = "/election"
+const StartRouteElection = "/startelection"
 
 // TODO - print info logs - maybe also in a config file defined
 // var Verbose = true
@@ -14,8 +17,10 @@ var CoordinatorUserId = ""
 /*
 start election algorithm (your initiative)
  */
-func StartElectionAlgorithm() {
-	// TODO
+func StartElectionAlgorithm(informationElectionDTO InformationElectionDTO) InformationElectionDTO {
+	logrus.Infof("[election.StartElectionAlgorithm] starting..")
+	response := ReceiveMessage(informationElectionDTO)
+	return response
 }
 
 // election state information

@@ -67,7 +67,7 @@ func receiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 /*
 registerToService - send a registration message containing id details to an another endpoint
  */
-func registerToService(ip string ) string {
+func registerToService(ip string, informationElectionDTO election.InformationElectionDTO) string {
 	endpoint := "http://" + ip
 	// send YourUserInformation as a payload to the service to get your identification
 	payload, err := json.Marshal(RegisterInfoDTO{
@@ -90,7 +90,7 @@ func registerToService(ip string ) string {
 	// set Users with all UserIdInfos (yours included)
 	id.Users = registerResponse.UserIdInfos
 	logrus.Info("[service.registerToService] register information send and id info set, starting election, ...")
-	election.StartElectionAlgorithm()
+	election.StartElectionAlgorithm(informationElectionDTO)
 	logrus.Info("[service.registerToService] finished election coordinator: " + election.CoordinatorUserId)
 	return "ok"
 }

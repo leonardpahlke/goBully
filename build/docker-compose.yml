@@ -1,1 +1,37 @@
-# TODO
+version: "1.0"
+services:
+  gobully1:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - USERID=exampleUser
+      - ENDPOINT=gobully1:8080
+  gobully2:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "8082:8082"
+    environment:
+      - USERID=exampleUser2
+      - ENDPOINT=gobully2:8082
+  gobully3:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "80:80"
+    environment:
+      - USERID=exampleUser3
+      - ENDPOINT=gobully3:80
+  gobully4:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "5000:5000"
+    environment:
+      - USERID=exampleUser4
+      - ENDPOINT=gobully4:5000
+  gobully5:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "80:85"
+    environment:
+      - USERID=exampleUser5
+      - ENDPOINT=gobully5:85

@@ -4,6 +4,7 @@ import (
 	"gobully/internal/identity"
 	"gobully/internal/service"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -12,10 +13,8 @@ func main() {
 	logrus.Infof("[main] Starting Container \n get environment variables")
 	// environment variables
 	userID := os.Getenv("USERID")
-	port := os.Getenv("PORT")
-	host := os.Getenv("HOST")
-	// your identity service endpoint
-	endpoint := "http://" + host + ":" + port
+	endpoint := os.Getenv("ENDPOINT")
+	port := strings.SplitAfter(endpoint, ":")[1]
 
 	// set identity information
 	identity.YourUserInformation = identity.InformationUserDTO{

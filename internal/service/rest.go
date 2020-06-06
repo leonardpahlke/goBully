@@ -40,7 +40,7 @@ func StartAPI(port string) {
 	// create api server - gin framework
 	r := gin.New()
 
-	// API ENDPOINTS
+	// REGISTER
 	// new identity register information
 	r.POST(RegisterRoute, adapterRegisterService)
 	// trigger identity register
@@ -49,8 +49,12 @@ func StartAPI(port string) {
 	r.POST(UnRegisterRoute, adapterUnRegisterFromService)
 	// trigger identity unregister from other identity services
 	r.POST(SendUnRegisterRoute, adapterSendUnRegisterToServices)
+
+	// ELECTION
 	// election algorithm endpoint
 	r.POST(election.RouteElection, adapterElectionMessage)
+	// start election algorithm endpoint
+	r.POST(election.StartRouteElection, adapterStartElectionMessage)
 
 	// start api server
 	err := r.Run(":" + port)
@@ -59,7 +63,7 @@ func StartAPI(port string) {
 	}
 }
 
-// swagger:operation POST /register service registerService
+// swagger:operation POST /register register registerService
 // Register User information to service
 // ---
 // consumes:
@@ -93,14 +97,20 @@ func adapterRegisterService(c *gin.Context) {
 	c.JSON(200, serviceRegisterResponse)
 }
 
-// swagger:operation POST /sendregister service triggerRegisterToService
-// User sends register request to another user
+// swagger:operation POST /sendregister register triggerRegisterToService
+// User sends register request to another user and kick off election to get the new coordinator
 // ---
 // consumes:
 // - application/json
 // produces:
 // - application/json
 // parameters:
+// - in: body
+//   name: electionInformation
+//   description: start election algorithm - to get a coordinator
+//   required: true
+//   schema:
+//     "$ref": "#/definitions/InformationElectionDTO"
 // - in: query
 //   type: number
 //   name: ip
@@ -115,13 +125,18 @@ func adapterRegisterService(c *gin.Context) {
 //    description: operation not available
 func adapterTriggerRegisterToService(c *gin.Context) {
 	// send post request to other endpoint to trigger connection cycle
+	var informationElectionDTO election.InformationElectionDTO
+	err := c.BindJSON(&informationElectionDTO)
+	if err != nil {
+		logrus.Fatalf("[service.adapterTriggerRegisterToService] Error marshal informationElectionDTO with error %s", err)
+	}
 	ip, _ := c.Params.Get("ip")
-	msg := registerToService(ip)
+	msg := registerToService(ip, informationElectionDTO)
 	// response check only if request was success full and has no further impact
 	c.String(200, msg)
 }
 
-// swagger:operation POST /unregister service unregisterFromService
+// swagger:operation POST /unregister register unregisterFromService
 // unregister service from your user list
 // ---
 // consumes:
@@ -147,7 +162,7 @@ func adapterUnRegisterFromService(c *gin.Context) {
 	var informationUserDTO id.InformationUserDTO
 	err := c.BindJSON(&informationUserDTO)
 	if err != nil {
-		logrus.Fatalf("[service.adapterTriggerRegisterToService] Error marshal informationUserDTO with error %s", err)
+		logrus.Fatalf("[service.adapterUnRegisterFromService] Error marshal informationUserDTO with error %s", err)
 	}
 	success := unregisterUserFromYourUserList(informationUserDTO)
 	if success {
@@ -157,7 +172,7 @@ func adapterUnRegisterFromService(c *gin.Context) {
 	}
 }
 
-// swagger:operation POST /sendunregister service sendUnregisterToServices
+// swagger:operation POST /sendunregister register sendUnregisterToServices
 // unregister yourself from other user service user lists
 // ---
 // consumes:
@@ -218,5 +233,38 @@ func adapterElectionMessage(c *gin.Context) {
 		logrus.Fatalf("[service.adapterElectionMessage] Error marshal electionInformation with error %s", err)
 	}
 	electionInformationResponse := election.ReceiveMessage(electionInformation)
+	c.JSON(200, electionInformationResponse)
+}
+
+// swagger:operation POST /startelection election startElectionMessage
+// execute election algorithm
+// ---
+// consumes:
+// - application/json
+// produces:
+// - application/json
+// parameters:
+// - in: body
+//   name: election
+//   description: start election algorithm - to get a coordinator
+//   required: true
+//   schema:
+//     "$ref": "#/definitions/InformationElectionDTO"
+// responses:
+//  '200':
+//    description: successful operation
+//    schema:
+//      $ref: "#/definitions/InformationElectionDTO"
+//  '404':
+//    description: error in operation
+//  '403':
+//    description: operation not available
+func adapterStartElectionMessage(c *gin.Context) {
+	var electionInformation election.InformationElectionDTO
+	err := c.BindJSON(&electionInformation)
+	if err != nil {
+		logrus.Fatalf("[service.adapterStartElectionMessage] Error marshal electionInformation with error %s", err)
+	}
+	electionInformationResponse := election.StartElectionAlgorithm(electionInformation)
 	c.JSON(200, electionInformationResponse)
 }

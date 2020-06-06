@@ -10,6 +10,10 @@ For more information, see the code comments and also the Swagger documentation
 
 TODO
 
+update swagger yaml
+
+`swagger generate spec -o ./api/swagger.yaml --scan-models`
+
 ## Start Scenario
 
 TODO
@@ -18,38 +22,9 @@ TODO
 
 may change
 
-- docker container as users
-- container with api for election and discovery
-- create multiple containers with docker-compose
-
-**Bully Algorithm Structure** - `internal/election/election.go`
-
-	- ReceiveMessage()             // get a message from a service (election, coordinator)
-	- messageReceivedElection()    // handle incoming election message
-	- sendElectionMessage()        // send a election message to another user
-      ---------------------
-	- messageReceivedCoordinator() // set local coordinator reference with incoming details
-	- sendCoordinatorMessages()    // send coordinator messages to other users
-	
-Election Message received:
-```
-messageReceivedElection()
-1. filter users to send election messages to (UserID > YourID)
-2. if |filtered users| <= 0
-   	YES: 2.1 you have the highest ID and win - send coordinatorMessages - exit
-   	NO : 2.2 transform message and create POST payload
-		 2.3 add callback information to local callbackList
-         2.4 GO - sendElectionMessage()
-            2.4.1 send POST request to client
-            2.4.2 if response is OK check client callback
-         2.5 wait a few seconds (enough time users can answer request)
-         2.6 Sort users who have called back and who are not
-         2.7 if |answered users| <= 0
-			2.7.1 YES: send coordinatorMessages - exit
-			2.7.2 NO : remove all users how didn't answered from userList
-         2.8 clear callback list
-3. send response back (answer)
-```
+- docker container as user in the network to run the bully algorithm
+- bully algorithm scenario with docker-compose simulated 
+- detailed swagger documentation [Swagger yaml](api/swagger.yaml) with [go-swagger](https://github.com/go-swagger/go-swagger)
 
 ![goBully](assets/goBully.jpg)
 
@@ -75,7 +50,7 @@ messageReceivedElection()
 │   └── service
 │       ├── register.go         // user register workflow
 │       └── rest.go             // api setup - endpoints
-├── .gitignore
+├── pkg
 │   └── request.go              // rest http calls
 ├── .gitignore
 ├── go.mod                      // go module information
@@ -83,10 +58,34 @@ messageReceivedElection()
 └── README.md
 ```
 
-**swagger api**
+## Bully Algorithm implementation
 
-[Swagger Doc](api/swagger.yml)
+`internal/election/election.go`
 
-Update swagger yml ([go-swagger](https://github.com/go-swagger/go-swagger) needed)
+	- ReceiveMessage()             // get a message from a service (election, coordinator)
+	- messageReceivedElection()    // handle incoming election message
+	- sendElectionMessage()        // send a election message to another user
+      ---------------------
+	- messageReceivedCoordinator() // set local coordinator reference with incoming details
+	- sendCoordinatorMessages()    // send coordinator messages to other users
+	
+more details
 
-`swagger generate spec -o ./api/swagger.yml --scan-models`
+```
+messageReceivedElection()
+1. filter users to send election messages to (UserID > YourID)
+2. if |filtered users| <= 0
+   	YES: 2.1 you have the highest ID and win - send coordinatorMessages - exit
+   	NO : 2.2 transform message and create POST payload
+		 2.3 add callback information to local callbackList
+         2.4 GO - sendElectionMessage()
+            2.4.1 send POST request to client
+            2.4.2 if response is OK check client callback
+         2.5 wait a few seconds (enough time users can answer request)
+         2.6 Sort users who have called back and who are not
+         2.7 if |answered users| <= 0
+			2.7.1 YES: send coordinatorMessages - exit
+			2.7.2 NO : remove all users how didn't answered from userList
+         2.8 clear callback list
+3. send response back (answer)
+```
