@@ -26,14 +26,14 @@ definitions:
         x-go-name: Payload
     required:
     - algorithm
+    - message
     - payload
     - identity
     - job
-    - message
     type: object
-    x-go-package: gobully/internal/election
+    x-go-package: goBully/internal/election
   InformationJobDTO:
-    description: election job details
+    description: InformationJobDTO election job details
     properties:
       callback:
         description: an url where the initiator can be reached with the results/token
@@ -46,7 +46,7 @@ definitions:
       id:
         description: some identity chosen by the initiator to identify this request
         type: string
-        x-go-name: Id
+        x-go-name: ID
       message:
         description: something you want to tell the other one
         type: string
@@ -64,15 +64,15 @@ definitions:
         type: string
         x-go-name: Task
     required:
-    - id
-    - task
-    - resource
-    - method
-    - data
     - callback
+    - data
+    - id
     - message
+    - method
+    - resource
+    - task
     type: object
-    x-go-package: gobully/internal/election
+    x-go-package: goBully/models
   InformationUserDTO:
     description: identity info struct
     properties:
@@ -85,12 +85,12 @@ definitions:
         type: string
         x-go-name: UserId
     required:
-    - userId
     - endpoint
+    - userId
     type: object
-    x-go-package: gobully/internal/identity
+    x-go-package: goBully/internal/identity
   InformationUserInfoDTO:
-    description: get service user info
+    description: InformationUserInfoDTO get service user info
     properties:
       coordinator:
         description: set coordinator
@@ -105,7 +105,7 @@ definitions:
     required:
     - users
     type: object
-    x-go-package: gobully/internal/identity
+    x-go-package: goBully/models
   RegisterInfoDTO:
     description: object sending id service to register yourself
     properties:
@@ -123,12 +123,12 @@ definitions:
         x-go-name: NewUserId
     required:
     - distributing_user_id
-    - new_user_id
     - endpoint
+    - new_user_id
     type: object
-    x-go-package: gobully/internal/service
+    x-go-package: goBully/internal/service
   RegisterResponseDTO:
-    description: response object after register to id service
+    description: RegisterResponseDTO response object after register to id service
     properties:
       message:
         description: dummy message to print response
@@ -139,12 +139,12 @@ definitions:
         items:
           $ref: '#/definitions/InformationUserDTO'
         type: array
-        x-go-name: UserIdInfos
+        x-go-name: UserIDInfos
     required:
     - message
     - user_id_infos
     type: object
-    x-go-package: gobully/internal/service
+    x-go-package: goBully/models
 host: localhost
 info:
   description: |-
@@ -154,7 +154,11 @@ info:
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  termsOfService: there are no TOS at this moment, use at your own risk we take no responsibility
+  termsOfService: |-
+    there are no TOS at this moment, use at your own risk we take no responsibility
+    Schemes:
+    http
+    https
   title: gBully API
   version: 0.2.0
 paths:
@@ -197,7 +201,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/RegisterInfoDTO'
-        type: string
       produces:
       - application/json
       responses:
@@ -225,6 +228,7 @@ paths:
         schema:
           $ref: '#/definitions/InformationElectionDTO'
       - description: trigger registration, service sends registration message to other
+        format: double
         in: query
         name: ip
         required: true
@@ -246,12 +250,6 @@ paths:
       - application/json
       description: unregister yourself from other user service user lists
       operationId: sendUnregisterToServices
-      parameters:
-      - description: send unregister messages to others
-        in: path
-        name: service
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -316,6 +314,58 @@ paths:
 produces:
 - application/json
 - application/xml
+responses:
+  electionMessageForbidden:
+    description: ElectionMessageForbidden operation not available
+  electionMessageNotFound:
+    description: ElectionMessageNotFound error in operation
+  electionMessageOK:
+    description: ElectionMessageOK successful operation
+    headers:
+      body:
+        description: 'In: Body'
+    schema:
+      $ref: '#/definitions/InformationElectionDTO'
+  registerServiceForbidden:
+    description: RegisterServiceForbidden operation not available
+  registerServiceNotFound:
+    description: RegisterServiceNotFound error in operation
+  registerServiceOK:
+    description: RegisterServiceOK successful operation
+    headers:
+      body:
+        description: 'In: Body'
+    schema:
+      $ref: '#/definitions/RegisterResponseDTO'
+  sendUnregisterToServicesForbidden:
+    description: SendUnregisterToServicesForbidden operation not available
+  sendUnregisterToServicesNotFound:
+    description: SendUnregisterToServicesNotFound error in operation
+  sendUnregisterToServicesOK:
+    description: SendUnregisterToServicesOK successful operation
+  startElectionMessageForbidden:
+    description: StartElectionMessageForbidden operation not available
+  startElectionMessageNotFound:
+    description: StartElectionMessageNotFound error in operation
+  startElectionMessageOK:
+    description: StartElectionMessageOK successful operation
+    headers:
+      body:
+        description: 'In: Body'
+    schema:
+      $ref: '#/definitions/InformationElectionDTO'
+  triggerRegisterToServiceForbidden:
+    description: TriggerRegisterToServiceForbidden operation not available
+  triggerRegisterToServiceNotFound:
+    description: TriggerRegisterToServiceNotFound error in operation
+  triggerRegisterToServiceOK:
+    description: TriggerRegisterToServiceOK successful operation
+  unregisterFromServiceForbidden:
+    description: UnregisterFromServiceForbidden operation not available
+  unregisterFromServiceNotFound:
+    description: UnregisterFromServiceNotFound error in operation
+  unregisterFromServiceOK:
+    description: UnregisterFromServiceOK successful operation
 schemes:
 - http
 - https

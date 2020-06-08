@@ -1,4 +1,4 @@
-module gobully
+module goBully
 
 go 1.14
 

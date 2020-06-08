@@ -28,8 +28,8 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"gobully/internal/election"
-	id "gobully/internal/identity"
+	"goBully/internal/election"
+	id "goBully/internal/identity"
 )
 
 const DefaultSuccessMessage = "successful operation"
@@ -74,12 +74,6 @@ func StartAPI(port string) {
 // - application/json
 // produces:
 // - application/json
-// parameters:
-// - in: path
-//   name: service
-//   description: get all users registered at this account
-//   required: true
-//   type: string
 // responses:
 //  '200':
 //    description: successful operation
@@ -162,7 +156,7 @@ func adapterRegisterService(c *gin.Context) {
 //    description: operation not available
 func adapterTriggerRegisterToService(c *gin.Context) {
 	// send post request to other endpoint to trigger connection cycle
-	var informationElectionDTO election.InformationElectionDTO
+	var informationElectionDTO id.InformationElectionDTO
 	err := c.BindJSON(&informationElectionDTO)
 	if err != nil {
 		logrus.Fatalf("[service.adapterTriggerRegisterToService] Error marshal informationElectionDTO with error %s", err)
@@ -216,12 +210,6 @@ func adapterUnRegisterFromService(c *gin.Context) {
 // - application/json
 // produces:
 // - application/json
-// parameters:
-// - in: path
-//   name: service
-//   description: send unregister messages to others
-//   required: true
-//   type: string
 // responses:
 //  '200':
 //    description: successful operation

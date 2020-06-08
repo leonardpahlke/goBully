@@ -8,20 +8,51 @@ For more information, see the code comments and also the Swagger documentation
 
 ## Build
 
-TODO
+**Dockerfile**
+```go
+// Build Container
+docker build -t leonardpahlke/gobully:latest .
 
-update swagger yaml
+// Run Container
+docker run --rm -itd -p 8080:8080 leonardpahlke/gobully:latest
 
-`swagger generate spec -o ./api/swagger.yml --scan-models`
+```
+
+Connect to container http://localhost:8080
+
+```
+// Visit API
+// TODO
+```
+
+**API [go-swagger](https://github.com/go-swagger/go-swagger) needed**
+```bash
+// validate swagger yml
+swagger validate ./api/swagger.yml
+
+// update swagger yml
+swagger generate spec -o ./api/swagger.yml --scan-models
+
+// start swagger server
+swagger generate server -A goBully -f ./api/swagger.yml
+```
 
 ## Start Scenario
 
-TODO
+**Docker compose**
+```go
+// Start
+docker-compose up // TODO
+
+// Stop
+docker-compose down // TODO
+```
+
+// TODO scenario image 
 
 ## Features
 
 may change
-
 - docker container as user in the network to run the bully algorithm
 - bully algorithm scenario with docker-compose simulated 
 - detailed swagger documentation [Swagger yml](api/swagger.yml) with [go-swagger](https://github.com/go-swagger/go-swagger)
