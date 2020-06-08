@@ -10,9 +10,9 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"gobully/restapi/operations"
-	"gobully/restapi/operations/election"
-	"gobully/restapi/operations/register"
+	"goBully/restapi/operations"
+	"goBully/restapi/operations/election"
+	"goBully/restapi/operations/register"
 )
 
 //go:generate swagger generate server --target ../../goBully --name GoBully --spec ../api/swagger.yml

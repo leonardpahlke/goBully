@@ -19,8 +19,8 @@ import (
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"gobully/restapi/operations/election"
-	"gobully/restapi/operations/register"
+	"goBully/restapi/operations/election"
+	"goBully/restapi/operations/register"
 )
 
 // NewGoBullyAPI creates a new GoBully instance

@@ -16,7 +16,7 @@ import (
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
-	"gobully/models"
+	"goBully/models"
 )
 
 // NewTriggerRegisterToServiceParams creates a new TriggerRegisterToServiceParams object

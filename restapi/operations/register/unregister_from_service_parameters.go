@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"gobully/models"
+	"goBully/models"
 )
 
 // NewUnregisterFromServiceParams creates a new UnregisterFromServiceParams object

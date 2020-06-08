@@ -21,8 +21,8 @@ docker run --rm -itd -p 8080:8080 leonardpahlke/gobully:latest
 Connect to container http://localhost:8080
 
 ```
-// Start Swagger Server
-// TODO
+// Display Swagger UI
+swagger serve ./api/swagger.yml
 ```
 
 **API [go-swagger](https://github.com/go-swagger/go-swagger) needed**

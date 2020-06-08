@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"gobully/models"
+	"goBully/models"
 )
 
 // RegisterServiceOKCode is the HTTP code returned for type RegisterServiceOK

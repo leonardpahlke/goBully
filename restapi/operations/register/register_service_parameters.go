@@ -13,7 +13,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"gobully/models"
+	"goBully/models"
 )
 
 // NewRegisterServiceParams creates a new RegisterServiceParams object

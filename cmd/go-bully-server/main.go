@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 
-	"gobully/restapi"
-	"gobully/restapi/operations"
+	"goBully/restapi"
+	"goBully/restapi/operations"
 
 	"github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
