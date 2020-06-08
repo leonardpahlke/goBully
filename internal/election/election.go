@@ -152,7 +152,7 @@ func sendElectionMessage(userCallback *callbackResponse, msgPayload []byte) {
 	}
 	// 2.4.2 if response is OK check client callback
 	var electionAnswerResponse InformationElectionDTO
-	err = json.Unmarshal(res, electionAnswerResponse)
+	err = json.Unmarshal(res, &electionAnswerResponse)
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error Unmarshal electionAnswerResponse with error %s", err)
 	}

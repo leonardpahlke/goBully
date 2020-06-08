@@ -28,8 +28,8 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"goBully/internal/election"
-	id "goBully/internal/identity"
+	"gobully/internal/election"
+	id "gobully/internal/identity"
 )
 
 const DefaultSuccessMessage = "successful operation"
@@ -156,7 +156,7 @@ func adapterRegisterService(c *gin.Context) {
 //    description: operation not available
 func adapterTriggerRegisterToService(c *gin.Context) {
 	// send post request to other endpoint to trigger connection cycle
-	var informationElectionDTO id.InformationElectionDTO
+	var informationElectionDTO election.InformationElectionDTO
 	err := c.BindJSON(&informationElectionDTO)
 	if err != nil {
 		logrus.Fatalf("[service.adapterTriggerRegisterToService] Error marshal informationElectionDTO with error %s", err)

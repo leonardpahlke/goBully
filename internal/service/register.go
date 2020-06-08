@@ -42,7 +42,7 @@ func receiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 					logrus.Fatalf("[service.receiveServiceRegister] Error sending post request with error %s", err)
 				}
 				registerResponse := RegisterResponseDTO{}
-				err = json.Unmarshal(res, registerResponse)
+				err = json.Unmarshal(res, &registerResponse)
 				if err != nil {
 					logrus.Fatalf("[service.receiveServiceRegister] Error Unmarshal post response with error %s", err)
 				}

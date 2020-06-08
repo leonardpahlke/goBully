@@ -21,7 +21,7 @@ docker run --rm -itd -p 8080:8080 leonardpahlke/gobully:latest
 Connect to container http://localhost:8080
 
 ```
-// Visit API
+// Start Swagger Server
 // TODO
 ```
 
