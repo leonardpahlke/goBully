@@ -12,7 +12,7 @@ TODO
 
 update swagger yaml
 
-`swagger generate spec -o ./api/swagger.yaml --scan-models`
+`swagger generate spec -o ./api/swagger.yml --scan-models`
 
 ## Start Scenario
 
@@ -24,7 +24,7 @@ may change
 
 - docker container as user in the network to run the bully algorithm
 - bully algorithm scenario with docker-compose simulated 
-- detailed swagger documentation [Swagger yaml](api/swagger.yaml) with [go-swagger](https://github.com/go-swagger/go-swagger)
+- detailed swagger documentation [Swagger yml](api/swagger.yml) with [go-swagger](https://github.com/go-swagger/go-swagger)
 
 ![goBully](assets/goBully.jpg)
 
@@ -36,9 +36,6 @@ may change
 │   └── swagger.yml             // swagger api dcumentation
 ├── assets
 │   └── ...                     // pictures and stuff
-├── build
-│   ├── Dockerfile              // docker container script
-│   └── docker-compose.yml      // dockercompose run szenario
 ├── cmd
 │   └── main.go                 // starting point of the application
 ├── internal
@@ -53,6 +50,8 @@ may change
 ├── pkg
 │   └── request.go              // rest http calls
 ├── .gitignore
+├── docker-compose.yml          // dockercompose run szenario
+├── Dockerfile                  // docker container script
 ├── go.mod                      // go module information
 ├── go.sum                      // go module libary imports
 └── README.md

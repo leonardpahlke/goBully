@@ -89,6 +89,23 @@ definitions:
     - endpoint
     type: object
     x-go-package: gobully/internal/identity
+  InformationUserInfoDTO:
+    description: get service user info
+    properties:
+      coordinator:
+        description: set coordinator
+        type: string
+        x-go-name: Coordinator
+      users:
+        description: all user linked to the service
+        items:
+          $ref: '#/definitions/InformationUserDTO'
+        type: array
+        x-go-name: Users
+    required:
+    - users
+    type: object
+    x-go-package: gobully/internal/identity
   RegisterInfoDTO:
     description: object sending id service to register yourself
     properties:
@@ -180,6 +197,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/RegisterInfoDTO'
+        type: string
       produces:
       - application/json
       responses:

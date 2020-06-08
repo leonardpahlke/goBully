@@ -40,6 +40,10 @@ func StartAPI(port string) {
 	// create api server - gin framework
 	r := gin.New()
 
+	// USER
+	// new identity register information
+	r.GET("/users", adapterUsersInfo)
+
 	// REGISTER
 	// new identity register information
 	r.POST(RegisterRoute, adapterRegisterService)
@@ -62,6 +66,38 @@ func StartAPI(port string) {
 		logrus.Fatalf("[service.StartAPI] Error running server with error %s", err)
 	}
 }
+
+// swagger:operation POST /register user registerService
+// Get registered user information's and coordinator
+// ---
+// consumes:
+// - application/json
+// produces:
+// - application/json
+// parameters:
+// - in: path
+//   name: service
+//   description: get all users registered at this account
+//   required: true
+//   type: string
+// responses:
+//  '200':
+//    description: successful operation
+//    schema:
+//      $ref: "#/definitions/InformationUserInfoDTO"
+//  '404':
+//    description: error in operation
+//  '403':
+//    description: operation not available
+func adapterUsersInfo(c *gin.Context) {
+	var informationUserInfoDTO = id.InformationUserInfoDTO{
+		Users:       id.Users,
+		Coordinator: election.CoordinatorUserId,
+	}
+	// return all registered users and coordinator information
+	c.JSON(200, informationUserInfoDTO)
+}
+
 
 // swagger:operation POST /register register registerService
 // Register User information to service
@@ -96,6 +132,7 @@ func adapterRegisterService(c *gin.Context) {
 	// return all registered users to new identity
 	c.JSON(200, serviceRegisterResponse)
 }
+
 
 // swagger:operation POST /sendregister register triggerRegisterToService
 // User sends register request to another user and kick off election to get the new coordinator

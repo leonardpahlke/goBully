@@ -42,3 +42,13 @@ type InformationUserDTO struct {
 	// required: true
 	Endpoint string `json:"endpoint"`
 }
+
+// get service user info
+// swagger:model
+type InformationUserInfoDTO struct {
+	// all user linked to the service
+	// required: true
+	Users   []InformationUserDTO `json:"users"`
+	// set coordinator
+	Coordinator string `json:"coordinator"`
+}
