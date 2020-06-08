@@ -28,8 +28,8 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"gobully/internal/election"
-	id "gobully/internal/identity"
+	"goBully/internal/election"
+	id "goBully/internal/identity"
 )
 
 const DefaultSuccessMessage = "successful operation"

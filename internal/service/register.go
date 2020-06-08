@@ -3,9 +3,9 @@ package service
 import (
 	"encoding/json"
 	"github.com/sirupsen/logrus"
-	"gobully/internal/election"
-	id "gobully/internal/identity"
-	"gobully/pkg"
+	"goBully/internal/election"
+	id "goBully/internal/identity"
+	"goBully/pkg"
 )
 
 // static routes (service discovery would set these vars in a prod application)

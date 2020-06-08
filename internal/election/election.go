@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	id "gobully/internal/identity"
-	"gobully/pkg"
+	id "goBully/internal/identity"
+	"goBully/pkg"
 	"time"
 )
 

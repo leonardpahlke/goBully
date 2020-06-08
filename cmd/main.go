@@ -1,8 +1,8 @@
 package main
 
 import (
-	"gobully/internal/identity"
-	"gobully/internal/service"
+	"goBully/internal/identity"
+	"goBully/internal/service"
 	"os"
 	"strings"
 
