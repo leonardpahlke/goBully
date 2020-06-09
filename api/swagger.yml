@@ -106,6 +106,25 @@ definitions:
     - users
     type: object
     x-go-package: goBully/internal/identity
+  InputInformationElectionDTO:
+    description: input election state information
+    properties:
+      job:
+        $ref: '#/definitions/InformationJobDTO'
+      message:
+        description: something you want to tell the other one
+        type: string
+        x-go-name: Message
+      payload:
+        description: the payload for the current state of the algorithm
+        type: string
+        x-go-name: Payload
+    required:
+    - payload
+    - job
+    - message
+    type: object
+    x-go-package: goBully/internal/election
   RegisterInfoDTO:
     description: object sending id api to register yourself
     properties:
@@ -268,7 +287,26 @@ paths:
         name: election
         required: true
         schema:
-          $ref: '#/definitions/InformationElectionDTO'
+          $ref: '#/definitions/InputInformationElectionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InformationElectionDTO'
+        "403":
+          description: operation not available
+        "404":
+          description: error in operation
+      tags:
+      - election
+  /startstaticelection:
+    post:
+      consumes:
+      - application/json
+      description: execute election algorithm with preset input
+      operationId: startStaticElectionMessage
       produces:
       - application/json
       responses:
@@ -306,6 +344,25 @@ paths:
           description: error in operation
       tags:
       - register
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get registered user information's and coordinator
+      operationId: users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: '#/definitions/InformationUserInfoDTO'
+        "403":
+          description: operation not available
+        "404":
+          description: error in operation
+      tags:
+      - user
 produces:
 - application/json
 - application/xml

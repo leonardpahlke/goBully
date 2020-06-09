@@ -30,12 +30,6 @@ tasks:
     cmds:
       - echo TODO
 
-  connect:
-    deps: [build]
-    desc: Connect to docker container
-    cmds:
-      - echo TODO
-
   update:
     desc: Update project dependencies
     cmds:

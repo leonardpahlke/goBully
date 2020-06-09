@@ -1,12 +1,23 @@
 package election
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/sirupsen/logrus"
+	id "goBully/internal/identity"
+)
 
 // Public function to interact with election
+
+const Algorithm = "bully"
 
 // API Endpoints
 const RouteElection = "/election"
 const StartRouteElection = "/startelection"
+const StartStaticRouteElection = "/startstaticelection"
+
+// message types
+const MessageCoordinator = "CoordinatorUserId"
+const MessageAnswer = "answer"
+const MessageElection = "election"
 
 // TODO - print info logs - maybe also in a config file defined
 // var Verbose = true
@@ -22,6 +33,31 @@ func StartElectionAlgorithm(informationElectionDTO InformationElectionDTO) Infor
 	response := ReceiveMessage(informationElectionDTO)
 	return response
 }
+
+func TransformInputInfoElectionDTO(inputInformationElectionDTO InputInformationElectionDTO)InformationElectionDTO {
+	return InformationElectionDTO{
+		Algorithm: Algorithm,
+		Payload:   inputInformationElectionDTO.Payload,
+		User:      id.YourUserInformation.UserId,
+		Job:       inputInformationElectionDTO.Job,
+		Message:   inputInformationElectionDTO.Message,
+	}
+}
+
+// input election state information
+// swagger:model
+type InputInformationElectionDTO struct {
+	// the payload for the current state of the algorithm
+	// required: true
+	Payload   string            `json:"payload"`
+	// jon information in InformationJobDTO
+	// required: true
+	Job       InformationJobDTO `json:"job"`
+	// something you want to tell the other one
+	// required: true
+	Message   string            `json:"message"`
+}
+
 
 // election state information
 // swagger:model

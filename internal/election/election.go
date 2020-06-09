@@ -12,11 +12,6 @@ import (
 // TODO think about a config file
 const waitingTime = time.Second * 2
 
-// message types
-const coordinatorMessage = "CoordinatorUserId"
-const answerMessage = "answer"
-const electionMessage = "election"
-
 // store api callback here (empty array)
 var callbacks []callbackResponse
 
@@ -36,10 +31,10 @@ func ReceiveMessage(electionInformation InformationElectionDTO) InformationElect
 	// response is set in messageReceivedCoordinator && messageReceivedElection
 	var electionInformationResponse InformationElectionDTO
 
-	switch electionInformation.Message {
-		case coordinatorMessage: messageReceivedCoordinator(electionInformation, &electionInformationResponse)
-		case electionMessage: messageReceivedElection(electionInformation, &electionInformationResponse)
-		default: fmt.Printf("[election.ReceiveMessage] message: %s, could not get parsed - abroad ", electionInformation)
+	switch electionInformation.Payload {
+		case MessageCoordinator: messageReceivedCoordinator(electionInformation, &electionInformationResponse)
+		case MessageElection: messageReceivedElection(electionInformation, &electionInformationResponse)
+		default: fmt.Printf("[election.ReceiveMessage] message: %s, could not get parsed - abroad ", electionInformation.Algorithm)
 	}
 	return electionInformationResponse
 }
@@ -84,14 +79,14 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 		// 2.2 transform message and create POST payload
 		myElectionInformation := InformationElectionDTO{
 			Algorithm: electionInformation.Algorithm,
-			Payload:   electionMessage,
-			User: 	   id.YourUserInformation.UserId,
+			Payload:   MessageElection,
+			User:      id.YourUserInformation.UserId,
 			Job:       electionInformation.Job,
 			Message:   "election in progress please answer me",
 		}
 		payload, err := json.Marshal(myElectionInformation)
 		if err != nil {
-			logrus.Fatalf("[election.sendElectionMessage] Error marshal electionCoordinatorMessage with error %s", err)
+			logrus.Fatalf("[election.messageReceivedElection] Error marshal electionCoordinatorMessage with error %s", err)
 		}
 		for _, user := range selectedUsers {
 			userCallback := callbackResponse{
@@ -130,7 +125,7 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 	// 3. send response back (answer)
 	*electionInformationResponse = InformationElectionDTO{
 		Algorithm: electionInformation.Algorithm,
-		Payload:   answerMessage,
+		Payload:   MessageAnswer,
 		User:      id.YourUserInformation.UserId,
 		Job:       electionInformation.Job,
 		Message:   "election message send to the others",
@@ -146,7 +141,7 @@ ALGORITHM - OVERVIEW
 func sendElectionMessage(userCallback *callbackResponse, msgPayload []byte) {
 	// 2.4.1 send POST request to client
 	logrus.Info("[election.sendElectionMessage] send election message to identity: " + userCallback.userInfo.UserId)
-	res, err := pkg.RequestPOST(userCallback.userInfo.Endpoint + RouteElection, string(msgPayload), "")
+	res, err := pkg.RequestPOST(userCallback.userInfo.Endpoint + RouteElection, string(msgPayload))
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error send post request with error %s", err)
 	}
@@ -156,7 +151,7 @@ func sendElectionMessage(userCallback *callbackResponse, msgPayload []byte) {
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error Unmarshal electionAnswerResponse with error %s", err)
 	}
-	if electionAnswerResponse.Payload == answerMessage {
+	if electionAnswerResponse.Payload == MessageAnswer {
 		// check client callback
 		*userCallback = callbackResponse{
 			userInfo: userCallback.userInfo,
@@ -176,7 +171,7 @@ func messageReceivedCoordinator(electionInformation InformationElectionDTO, elec
 	CoordinatorUserId = electionInformation.User
 	*electionInformationResponse = InformationElectionDTO{
 		Algorithm: electionInformation.Algorithm,
-		Payload:   answerMessage,
+		Payload:   MessageAnswer,
 		User:      id.YourUserInformation.UserId,
 		Job:       electionInformation.Job,
 		Message:   "OK",
@@ -193,7 +188,7 @@ func sendCoordinatorMessages(electionInformation InformationElectionDTO) {
 	// 1. create coordinator message
 	electionCoordinatorMessage := InformationElectionDTO{
 		Algorithm: electionInformation.Algorithm,
-		Payload:   coordinatorMessage,
+		Payload:   MessageCoordinator,
 		Job:       electionInformation.Job,
 		User:      id.YourUserInformation.UserId,
 		Message:   "new elected coordinator found",
@@ -204,7 +199,7 @@ func sendCoordinatorMessages(electionInformation InformationElectionDTO) {
 	}
 	// 2. send all users the coordinator message
 	for _, user := range id.Users {
-		_, err := pkg.RequestPOST(user.Endpoint + RouteElection, string(payload), "")
+		_, err := pkg.RequestPOST(user.Endpoint + RouteElection, string(payload))
 		if err != nil {
 			logrus.Fatalf("[election.sendCoordinatorMessages] Error sending post request to identity with error %s", err)
 		}

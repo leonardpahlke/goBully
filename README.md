@@ -8,13 +8,10 @@ For more information, see the code comments and the Swagger documentation.
 
 ## Install
 
-**GO** [installation](https://golang.org/doc/install) getting started - *run project binary*  
-
-**Docker** [installation](https://docs.docker.com/get-docker/) - *be able to run docker containers*  
-
-**Task** [installation](https://taskfile.dev/#/installation) doc - *build tool Taskfile.yml*
-
-**Go Swagger** [installation](https://goswagger.io/install.html) doc - *swagger api documentation*
+1. **GO** [installation](https://golang.org/doc/install) getting started - *run project binary*  
+2. **Docker** [installation](https://docs.docker.com/get-docker/) getting started - *be able to run docker containers* 
+3. **Task** [installation](https://taskfile.dev/#/installation) doc - *build tool Taskfile.yml*
+4. **Go Swagger** [installation](https://goswagger.io/install.html) doc - *swagger api documentation*
 
 ## Build
 *execute commands within the project root directory*
@@ -31,13 +28,18 @@ task: Available tasks for this project:
 * szenario:     Start docker-compose scenario
 * update:       Update project dependencies
 ```
+**Run commands**
+```go
+// run listed commands 
+task <task>
+// like
+task build
+```
 
-Stop Docker container
+**Stop Docker container**
 ```
 docker stop $(docker ps -a -q --filter ancestor=leonardpahlke/gobully:latest --format="{{.ID}}")
 ```
-
-Connect to container [localhost:8080](http://localhost:8080) via browser
 
 ## Features
 

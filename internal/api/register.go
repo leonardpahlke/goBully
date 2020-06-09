@@ -37,7 +37,7 @@ func receiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 		for _, user := range id.Users {
 			if user.UserId != id.YourUserInformation.UserId {
 				// IDEA we could wait if the other api answers and kick him out if he doesn't TODO do that?
-				res, err := pkg.RequestPOST(user.Endpoint + RegisterRoute, string(payload), "")
+				res, err := pkg.RequestPOST(user.Endpoint + RegisterRoute, string(payload))
 				if err != nil {
 					logrus.Fatalf("[api.receiveServiceRegister] Error sending post request with error %s", err)
 				}
@@ -78,7 +78,7 @@ func registerToService(ip string, informationElectionDTO election.InformationEle
 	if err != nil {
 		logrus.Fatalf("[api.registerToService] Error marshal newUser with error %s", err)
 	}
-	res, err := pkg.RequestPOST(endpoint + RegisterRoute, string(payload), "")
+	res, err := pkg.RequestPOST(endpoint + RegisterRoute, string(payload))
 	if err != nil {
 		logrus.Fatalf("[api.registerToService] Error sending post request with error %s", err)
 	}
@@ -114,7 +114,7 @@ func sendUnregisterUserFromYourUserList() bool {
 		logrus.Fatalf("[api.sendUnregisterUserFromYourUserList] Error Unmarshal YourUserInformation with error %s", err)
 	}
 	for _, user := range id.Users {
-		_, err = pkg.RequestPOST(user.Endpoint + UnRegisterRoute, string(payload), "")
+		_, err = pkg.RequestPOST(user.Endpoint + UnRegisterRoute, string(payload))
 		if err != nil {
 			logrus.Fatalf("[api.sendUnregisterUserFromYourUserList] Error RequestPOST with error %s", err)
 		}

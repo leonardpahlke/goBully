@@ -7,17 +7,15 @@ import (
 	"strings"
 )
 
-// TODO remove token and other useless stuff
+const LocalhostName = "localhost"
+const LocalhostIP = "127.0.0.1"
 
 // RequestGET - send http get request
-func RequestGET(url string, token string) ([]byte, error) {
+func RequestGET(url string) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		logrus.Fatalf("[request.RequestGET] Error instantiating request with error %s", err)
 		return nil, err
-	}
-	if token != "" {
-		req.Header.Add("Authorization", token)
 	}
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -34,15 +32,12 @@ func RequestGET(url string, token string) ([]byte, error) {
 }
 
 // RequestPOST - send http post request
-func RequestPOST(url string, payloadString string, token string) ([]byte, error) {
+func RequestPOST(url string, payloadString string) ([]byte, error) {
 	payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest("POST", url, payload)
 	if err != nil {
 		logrus.Fatalf("[request.RequestPOST] Error instantiating request with error %s", err)
 		return nil, err
-	}
-	if token != "" {
-		req.Header.Add("Authorization", token)
 	}
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {

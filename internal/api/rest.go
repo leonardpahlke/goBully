@@ -59,6 +59,8 @@ func StartAPI(port string) {
 	r.POST(election.RouteElection, adapterElectionMessage)
 	// start election algorithm endpoint
 	r.POST(election.StartRouteElection, adapterStartElectionMessage)
+	// start test election with static input
+	r.POST(election.StartStaticRouteElection, adapterStartStaticElectionMessage)
 
 	// start api server
 	err := r.Run(":" + port)
@@ -67,7 +69,7 @@ func StartAPI(port string) {
 	}
 }
 
-// swagger:operation POST /register user registerService
+// swagger:operation GET /users user users
 // Get registered user information's and coordinator
 // ---
 // consumes:
@@ -274,7 +276,7 @@ func adapterElectionMessage(c *gin.Context) {
 //   description: start election algorithm - to get a coordinator
 //   required: true
 //   schema:
-//     "$ref": "#/definitions/InformationElectionDTO"
+//     "$ref": "#/definitions/InputInformationElectionDTO"
 // responses:
 //  '200':
 //    description: successful operation
@@ -285,10 +287,38 @@ func adapterElectionMessage(c *gin.Context) {
 //  '403':
 //    description: operation not available
 func adapterStartElectionMessage(c *gin.Context) {
-	var electionInformation election.InformationElectionDTO
+	var electionInformation election.InputInformationElectionDTO
 	err := c.BindJSON(&electionInformation)
 	if err != nil {
 		logrus.Fatalf("[api.adapterStartElectionMessage] Error marshal electionInformation with error %s", err)
+	}
+	electionInfoResponse := election.StartElectionAlgorithm(election.TransformInputInfoElectionDTO(electionInformation))
+	c.JSON(200, electionInfoResponse)
+}
+
+// swagger:operation POST /startstaticelection election startStaticElectionMessage
+// execute election algorithm with preset input
+// ---
+// consumes:
+// - application/json
+// produces:
+// - application/json
+// responses:
+//  '200':
+//    description: successful operation
+//    schema:
+//      $ref: "#/definitions/InformationElectionDTO"
+//  '404':
+//    description: error in operation
+//  '403':
+//    description: operation not available
+func adapterStartStaticElectionMessage(c *gin.Context) {
+	var electionInformation = election.InformationElectionDTO{
+		Algorithm: election.Algorithm,
+		Payload:   election.MessageElection,
+		User:      id.YourUserInformation.UserId,
+		Job:       election.InformationJobDTO{},
+		Message:   "origin adapterStartStaticElectionMessage",
 	}
 	electionInformationResponse := election.StartElectionAlgorithm(electionInformation)
 	c.JSON(200, electionInformationResponse)

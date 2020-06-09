@@ -34,7 +34,7 @@ COPY --from=builder /app/main .
 
 # set default enviorment variables
 ENV USERID exampleUser
-ENV ENDPOINT localhost:8080
+ENV ENDPOINT 127.0.0.1:8080
 
 # expose default port
 EXPOSE 8080

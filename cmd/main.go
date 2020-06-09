@@ -19,7 +19,7 @@ func main() {
 	// set identity information
 	identity.YourUserInformation = identity.InformationUserDTO{
 		UserId:   userID,
-		Endpoint: endpoint,
+		Endpoint:" http://" + endpoint,
 	}
 	// add yourself to identity list
 	identity.AddUser(identity.YourUserInformation)
