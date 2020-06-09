@@ -12,7 +12,7 @@ adds a identity to your identity pool
  */
 func AddUser(userInformation InformationUserDTO) {
 	Users = append(Users, userInformation)
-	logrus.Info("[service.AddUser] identity added " + userInformation.UserId)
+	logrus.Info("[api.AddUser] identity added " + userInformation.UserId)
 }
 
 /*
@@ -24,11 +24,11 @@ func DeleteUser(userInformation InformationUserDTO) bool {
 			// delete identity from the list
 			Users[i] = Users[len(Users)-1]
 			Users = Users[:len(Users)-1]
-			logrus.Info("[service.DeleteUser] identity deleted " + userInformation.UserId)
+			logrus.Info("[api.DeleteUser] identity deleted " + userInformation.UserId)
 			return true
 		}
 	}
-	logrus.Warning("[service.DeleteUser] identity could not be found and deleted " + userInformation.UserId)
+	logrus.Warning("[api.DeleteUser] identity could not be found and deleted " + userInformation.UserId)
 	return false
 }
 
@@ -43,10 +43,10 @@ type InformationUserDTO struct {
 	Endpoint string `json:"endpoint"`
 }
 
-// get service user info
+// get api user info
 // swagger:model
 type InformationUserInfoDTO struct {
-	// all user linked to the service
+	// all user linked to the api
 	// required: true
 	Users   []InformationUserDTO `json:"users"`
 	// set coordinator

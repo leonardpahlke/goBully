@@ -1,18 +1,21 @@
 version: '2'
 
+vars:
+  CONTAINER: leonardpahlke/gobully:latest
+
 tasks:
 
   build:
     desc: Build docker container
     cmds:
-      - go mod download
-      - docker build -t leonardpahlke/gobully:latest .
+      - docker build -t {{.CONTAINER}} .
+      - docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
 
   run:
-    deps: [build]
     desc: Start docker container
     cmds:
-      - docker run --rm -itd -p 8080:8080 leonardpahlke/gobully:latest
+      - docker run --rm -itd -p 8080:8080 {{.CONTAINER}}
+      - docker ps
 
   swagger:
     desc: Generate swagger.yml and start local server
@@ -32,3 +35,9 @@ tasks:
     desc: Connect to docker container
     cmds:
       - echo TODO
+
+  update:
+    desc: Update project dependencies
+    cmds:
+      - go list -e $(go list -m all)
+      - go mod download

@@ -17,11 +17,11 @@ const coordinatorMessage = "CoordinatorUserId"
 const answerMessage = "answer"
 const electionMessage = "election"
 
-// store service callback here (empty array)
+// store api callback here (empty array)
 var callbacks []callbackResponse
 
 /* METHODS overview:
-	- ReceiveMessage()             // get a message from a service (election, coordinator)
+	- ReceiveMessage()             // get a message from a api (election, coordinator)
 	- messageReceivedElection()    // handle incoming election message
 	- sendElectionMessage()        // send a election message to another user
       ---------------------

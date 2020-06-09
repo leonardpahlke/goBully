@@ -1,4 +1,4 @@
-// Package service gBully API
+// Package api gBully API
 //
 // This project implements the bully algorithm with docker containers.
 // Several containers are served, each of which is accessible with a rest API.
@@ -23,7 +23,7 @@
 //     - application/xml
 //
 // swagger:meta
-package service
+package api
 
 import (
 	"github.com/gin-gonic/gin"
@@ -63,7 +63,7 @@ func StartAPI(port string) {
 	// start api server
 	err := r.Run(":" + port)
 	if err != nil {
-		logrus.Fatalf("[service.StartAPI] Error running server with error %s", err)
+		logrus.Fatalf("[api.StartAPI] Error running server with error %s", err)
 	}
 }
 
@@ -94,7 +94,7 @@ func adapterUsersInfo(c *gin.Context) {
 
 
 // swagger:operation POST /register register registerService
-// Register User information to service
+// Register User information to api
 // ---
 // consumes:
 // - application/json
@@ -102,7 +102,7 @@ func adapterUsersInfo(c *gin.Context) {
 // - application/json
 // parameters:
 // - in: body
-//   name: service
+//   name: api
 //   description: send register information to get in the network
 //   required: true
 //   schema:
@@ -120,7 +120,7 @@ func adapterRegisterService(c *gin.Context) {
 	var serviceRegisterInfo RegisterInfoDTO
 	err := c.BindJSON(&serviceRegisterInfo)
 	if err != nil {
-		logrus.Fatalf("[service.adapterRegisterService] Error marshal serviceRegisterInfo with error %s", err)
+		logrus.Fatalf("[api.adapterRegisterService] Error marshal serviceRegisterInfo with error %s", err)
 	}
 	serviceRegisterResponse := receiveServiceRegister(serviceRegisterInfo)
 	// return all registered users to new identity
@@ -145,7 +145,7 @@ func adapterRegisterService(c *gin.Context) {
 // - in: query
 //   type: number
 //   name: ip
-//   description: trigger registration, service sends registration message to other
+//   description: trigger registration, api sends registration message to other
 //   required: true
 // responses:
 //  '200':
@@ -159,7 +159,7 @@ func adapterTriggerRegisterToService(c *gin.Context) {
 	var informationElectionDTO election.InformationElectionDTO
 	err := c.BindJSON(&informationElectionDTO)
 	if err != nil {
-		logrus.Fatalf("[service.adapterTriggerRegisterToService] Error marshal informationElectionDTO with error %s", err)
+		logrus.Fatalf("[api.adapterTriggerRegisterToService] Error marshal informationElectionDTO with error %s", err)
 	}
 	ip, _ := c.Params.Get("ip")
 	msg := registerToService(ip, informationElectionDTO)
@@ -168,7 +168,7 @@ func adapterTriggerRegisterToService(c *gin.Context) {
 }
 
 // swagger:operation POST /unregister register unregisterFromService
-// unregister service from your user list
+// unregister api from your user list
 // ---
 // consumes:
 // - application/json
@@ -176,8 +176,8 @@ func adapterTriggerRegisterToService(c *gin.Context) {
 // - application/json
 // parameters:
 // - in: body
-//   name: service
-//   description: some service is unregistering from all users, remove user from active users
+//   name: api
+//   description: some api is unregistering from all users, remove user from active users
 //   required: true
 //   schema:
 //     "$ref": "#/definitions/InformationUserDTO"
@@ -193,7 +193,7 @@ func adapterUnRegisterFromService(c *gin.Context) {
 	var informationUserDTO id.InformationUserDTO
 	err := c.BindJSON(&informationUserDTO)
 	if err != nil {
-		logrus.Fatalf("[service.adapterUnRegisterFromService] Error marshal informationUserDTO with error %s", err)
+		logrus.Fatalf("[api.adapterUnRegisterFromService] Error marshal informationUserDTO with error %s", err)
 	}
 	success := unregisterUserFromYourUserList(informationUserDTO)
 	if success {
@@ -204,7 +204,7 @@ func adapterUnRegisterFromService(c *gin.Context) {
 }
 
 // swagger:operation POST /sendunregister register sendUnregisterToServices
-// unregister yourself from other user service user lists
+// unregister yourself from other user api user lists
 // ---
 // consumes:
 // - application/json
@@ -255,7 +255,7 @@ func adapterElectionMessage(c *gin.Context) {
 	var electionInformation election.InformationElectionDTO
 	err := c.BindJSON(&electionInformation)
 	if err != nil {
-		logrus.Fatalf("[service.adapterElectionMessage] Error marshal electionInformation with error %s", err)
+		logrus.Fatalf("[api.adapterElectionMessage] Error marshal electionInformation with error %s", err)
 	}
 	electionInformationResponse := election.ReceiveMessage(electionInformation)
 	c.JSON(200, electionInformationResponse)
@@ -288,7 +288,7 @@ func adapterStartElectionMessage(c *gin.Context) {
 	var electionInformation election.InformationElectionDTO
 	err := c.BindJSON(&electionInformation)
 	if err != nil {
-		logrus.Fatalf("[service.adapterStartElectionMessage] Error marshal electionInformation with error %s", err)
+		logrus.Fatalf("[api.adapterStartElectionMessage] Error marshal electionInformation with error %s", err)
 	}
 	electionInformationResponse := election.StartElectionAlgorithm(electionInformation)
 	c.JSON(200, electionInformationResponse)

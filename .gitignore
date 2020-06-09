@@ -1,6 +1,7 @@
 # macos specific files
 .DS_Store
 
+build
 # workspace directory
 .idea
 

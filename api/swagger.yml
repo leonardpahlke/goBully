@@ -90,14 +90,14 @@ definitions:
     type: object
     x-go-package: goBully/internal/identity
   InformationUserInfoDTO:
-    description: get service user info
+    description: get api user info
     properties:
       coordinator:
         description: set coordinator
         type: string
         x-go-name: Coordinator
       users:
-        description: all user linked to the service
+        description: all user linked to the api
         items:
           $ref: '#/definitions/InformationUserDTO'
         type: array
@@ -107,7 +107,7 @@ definitions:
     type: object
     x-go-package: goBully/internal/identity
   RegisterInfoDTO:
-    description: object sending id service to register yourself
+    description: object sending id api to register yourself
     properties:
       distributing_user_id:
         description: id sending new id information (new userId or some other userId)
@@ -126,9 +126,9 @@ definitions:
     - new_user_id
     - endpoint
     type: object
-    x-go-package: goBully/internal/service
+    x-go-package: goBully/internal/api
   RegisterResponseDTO:
-    description: response object after register to id service
+    description: response object after register to id api
     properties:
       message:
         description: dummy message to print response
@@ -144,7 +144,7 @@ definitions:
     - message
     - user_id_infos
     type: object
-    x-go-package: goBully/internal/service
+    x-go-package: goBully/internal/api
 host: localhost
 info:
   description: |-
@@ -188,12 +188,12 @@ paths:
     post:
       consumes:
       - application/json
-      description: Register User information to service
+      description: Register User information to api
       operationId: registerService
       parameters:
       - description: send register information to get in the network
         in: body
-        name: service
+        name: api
         required: true
         schema:
           $ref: '#/definitions/RegisterInfoDTO'
@@ -223,7 +223,7 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/InformationElectionDTO'
-      - description: trigger registration, service sends registration message to other
+      - description: trigger registration, api sends registration message to other
         in: query
         name: ip
         required: true
@@ -243,7 +243,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: unregister yourself from other user service user lists
+      description: unregister yourself from other user api user lists
       operationId: sendUnregisterToServices
       produces:
       - application/json
@@ -286,12 +286,12 @@ paths:
     post:
       consumes:
       - application/json
-      description: unregister service from your user list
+      description: unregister api from your user list
       operationId: unregisterFromService
       parameters:
-      - description: some service is unregistering from all users, remove user from active users
+      - description: some api is unregistering from all users, remove user from active users
         in: body
-        name: service
+        name: api
         required: true
         schema:
           $ref: '#/definitions/InformationUserDTO'

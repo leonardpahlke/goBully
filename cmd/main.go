@@ -1,8 +1,8 @@
 package main
 
 import (
+	"goBully/internal/api"
 	"goBully/internal/identity"
-	"goBully/internal/service"
 	"os"
 	"strings"
 
@@ -26,5 +26,5 @@ func main() {
 
 	// start api
 	logrus.Infof("[main] Service Information set, starting api")
-	service.StartAPI(port)
+	api.StartAPI(port)
 }

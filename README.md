@@ -10,6 +10,8 @@ For more information, see the code comments and the Swagger documentation.
 
 **GO** [installation](https://golang.org/doc/install) getting started - *run project binary*  
 
+**Docker** [installation](https://docs.docker.com/get-docker/) - *be able to run docker containers*  
+
 **Task** [installation](https://taskfile.dev/#/installation) doc - *build tool Taskfile.yml*
 
 **Go Swagger** [installation](https://goswagger.io/install.html) doc - *swagger api documentation*
@@ -24,51 +26,18 @@ task: Available tasks for this project:
 * build:        Build docker container
 * connect:      Connect to docker container
 * run:          Start docker container
+* stop:         Stop running docker container
 * swagger:      Generate swagger.yml and start local server
 * szenario:     Start docker-compose scenario
+* update:       Update project dependencies
 ```
 
-**Dockerfile**
-```go
-// Build Container
-docker build -t leonardpahlke/gobully:latest .
-
-// Run Container
-docker run --rm -itd -p 8080:8080 leonardpahlke/gobully:latest
-
+Stop Docker container
+```
+docker stop $(docker ps -a -q --filter ancestor=leonardpahlke/gobully:latest --format="{{.ID}}")
 ```
 
-Connect to container http://localhost:8080
-
-```
-// Display Swagger UI
-swagger serve ./api/swagger.yml
-```
-
-**API [go-swagger](https://github.com/go-swagger/go-swagger) needed**
-```bash
-// validate swagger yml
-swagger validate ./api/swagger.yml
-
-// update swagger yml
-swagger generate spec -o ./api/swagger.yml --scan-models
-
-// generate swagger server
-swagger generate server -A goBully -f ./api/swagger.yml
-```
-
-## Start Scenario
-
-**Docker compose**
-```go
-// Start
-docker-compose up // TODO
-
-// Stop
-docker-compose down // TODO
-```
-
-// TODO scenario image 
+Connect to container [localhost:8080](http://localhost:8080) via browser
 
 ## Features
 
