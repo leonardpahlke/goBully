@@ -1,0 +1,34 @@
+version: '2'
+
+tasks:
+
+  build:
+    desc: Build docker container
+    cmds:
+      - go mod download
+      - docker build -t leonardpahlke/gobully:latest .
+
+  run:
+    deps: [build]
+    desc: Start docker container
+    cmds:
+      - docker run --rm -itd -p 8080:8080 leonardpahlke/gobully:latest
+
+  swagger:
+    desc: Generate swagger.yml and start local server
+    cmds:
+      - swagger validate ./api/swagger.yml
+      - swagger generate spec -o ./api/swagger.yml --scan-models
+      - swagger serve ./api/swagger.yml
+
+  szenario:
+    deps: [build]
+    desc: Start docker-compose scenario
+    cmds:
+      - echo TODO
+
+  connect:
+    deps: [build]
+    desc: Connect to docker container
+    cmds:
+      - echo TODO

@@ -1,5 +1,9 @@
+# macos specific files
 .DS_Store
+
+# workspace directory
 .idea
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -15,6 +19,8 @@
 
 # Dependency directories (remove the comment below to include it)
 vendor/
-/vendor
-/vendor/
-vendor
+
+# go swagger server
+restapi
+models
+cmd/go-bully-server

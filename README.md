@@ -4,9 +4,29 @@ Project is under active development and not finished yet
 
 This project implements the bully algorithm with docker containers. 
 Several containers are served, each of which is accessible with a rest API. 
-For more information, see the code comments and also the Swagger documentation 
+For more information, see the code comments and the Swagger documentation. 
+
+## Install
+
+**GO** [installation](https://golang.org/doc/install) getting started - *run project binary*  
+
+**Task** [installation](https://taskfile.dev/#/installation) doc - *build tool Taskfile.yml*
+
+**Go Swagger** [installation](https://goswagger.io/install.html) doc - *swagger api documentation*
 
 ## Build
+*execute commands within the project root directory*
+
+**Check commands**
+```
+task --list
+task: Available tasks for this project:
+* build:        Build docker container
+* connect:      Connect to docker container
+* run:          Start docker container
+* swagger:      Generate swagger.yml and start local server
+* szenario:     Start docker-compose scenario
+```
 
 **Dockerfile**
 ```go
@@ -33,7 +53,7 @@ swagger validate ./api/swagger.yml
 // update swagger yml
 swagger generate spec -o ./api/swagger.yml --scan-models
 
-// start swagger server
+// generate swagger server
 swagger generate server -A goBully -f ./api/swagger.yml
 ```
 

@@ -1,33 +1,45 @@
-FROM golang:1.12.0-alpine3.9
+# ---------------------------
+# BUILD IMAGE
+FROM golang:1.12-alpine as builder
 
+# SETUP
+# add folders
 ADD . /go/src/goBully
-
-# execute further commands inside /app directory
+# execute further commands inside /go/src/goBully directory
 WORKDIR /go/src/goBully
+# update application and add git
+RUN apk --no-cache add ca-certificates git
 
-# Copy go mod and sum files (dependencies)
-RUN apk add --update --no-cache ca-certificates git
-
-# copy mod files and sum files to download dependecies
-COPY go.mod go.sum ./
-
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+# DEPENDENCIES
+# copy go.mod file to download dependecies
+COPY go.mod ./
+# download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
-
-# Check whether all depedencies have been downloaded
+# check whether all depedencies have been downloaded
 RUN go mod verify
 
-
+# BUILD
 # copy everything in the root directory into the workingdirectory directory
-COPY . .
-
+COPY . ./
+#RUN CGO_ENABLED=0 go build
+# run go build to compile the binary executable
 RUN go build -o ./build ./cmd
-# set enviorment variables (docker-compose overwrites these variables)
+
+# ---------------------------
+# FINAL IMAGE
+FROM alpine
+# set working directory
+WORKDIR /root
+# copy build executables
+COPY --from=builder /go/src/goBully/goBully .
+
+# set default enviorment variables
 ENV USERID exampleUser
 ENV ENDPOINT localhost:8080
 
-# run go build to compile the binary executable
+# expose default port
 EXPOSE 8080
 
-# start the application
-CMD ["go", "run", "cmd/main.go"]
+# execute
+CMD ["./goBully"]
+#CMD ["go", "run", "cmd/main.go"]
