@@ -31,7 +31,7 @@ definitions:
     - job
     - message
     type: object
-    x-go-package: gobully/internal/election
+    x-go-package: goBully/internal/election
   InformationJobDTO:
     description: election job details
     properties:
@@ -72,7 +72,7 @@ definitions:
     - callback
     - message
     type: object
-    x-go-package: gobully/internal/election
+    x-go-package: goBully/internal/election
   InformationUserDTO:
     description: identity info struct
     properties:
@@ -88,7 +88,7 @@ definitions:
     - userId
     - endpoint
     type: object
-    x-go-package: gobully/internal/identity
+    x-go-package: goBully/internal/identity
   InformationUserInfoDTO:
     description: get service user info
     properties:
@@ -105,7 +105,7 @@ definitions:
     required:
     - users
     type: object
-    x-go-package: gobully/internal/identity
+    x-go-package: goBully/internal/identity
   RegisterInfoDTO:
     description: object sending id service to register yourself
     properties:
@@ -126,7 +126,7 @@ definitions:
     - new_user_id
     - endpoint
     type: object
-    x-go-package: gobully/internal/service
+    x-go-package: goBully/internal/service
   RegisterResponseDTO:
     description: response object after register to id service
     properties:
@@ -144,7 +144,7 @@ definitions:
     - message
     - user_id_infos
     type: object
-    x-go-package: gobully/internal/service
+    x-go-package: goBully/internal/service
 host: localhost
 info:
   description: |-
