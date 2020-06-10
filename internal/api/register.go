@@ -20,7 +20,7 @@ const SendUnRegisterRoute = "/sendunregister"
 receiveServiceRegister - get user credentials from a new user and send them to the other connected users if new user send data directly to you
  */
 func receiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterResponseDTO {
-	logrus.Info("[api.receiveServiceRegister] register information received")
+	logrus.Infof("[api.receiveServiceRegister] register information received from %s", serviceRegisterInfo.DistributingUserId)
 	// check if sending id is also new id (-> do we have to notify other services?)
 	distributingUserIsNewUser := serviceRegisterInfo.DistributingUserId == serviceRegisterInfo.NewUserId
 	// create newUser information
@@ -57,8 +57,8 @@ func receiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 				if err != nil {
 					logrus.Fatalf("[api.receiveServiceRegister] Error Unmarshal post response with error %s", err)
 				}
+				logrus.Infof("[api.receiveServiceRegister] register information send to service: %s", user.Endpoint)
 			}
-			logrus.Infof("[api.receiveServiceRegister] register information send to service: %s", user.Endpoint)
 		}
 		sendRegistrationTo = sendRegistrationTo + "]"
 		return RegisterResponseDTO{
@@ -106,9 +106,9 @@ func registerToService(userEndpoint string) string {
 	}
 	// set Users with all UserIdInfos (yours included)
 	id.Users = registerResponse.UserIdInfos
-	logrus.Infof("[api.registerToService] register information send, message: %s, and id info set, starting election, ...", registerResponse.Message)
+	logrus.Infof("[api.registerToService] register response received, message: %s - starting election, ...", registerResponse.Message)
 	election.StartElectionAlgorithm(informationElectionDTO)
-	logrus.Info("[api.registerToService] finished election coordinator: " + election.CoordinatorUserId)
+	logrus.Info("[api.registerToService] finished election, new coordinator: " + election.CoordinatorUserId)
 	return "ok"
 }
 

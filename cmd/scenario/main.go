@@ -2,22 +2,34 @@ package main
 
 import (
 	"github.com/sirupsen/logrus"
-	"goBully/pkg"
 )
 
-/*
-1. connect container 1 with 3
-2. connect container 2 with 1, 3
- */
-func main() {
-	const container1Endpoint = "0.0.0.0:8080"
-	//const container2Endpoint = "localhost:8081"
-	const container3Endpoint = "0.0.0.0:8082"
+type testStruct struct {
+	Message string `json:"message"`
+}
 
-	// 1. send triggerRegisterToService
-	// container 1 sends post to container 3
-	_, err := pkg.RequestPOST("http://" + container1Endpoint + "/sendregister/ " + container3Endpoint, "")
-	if err != nil {
-		logrus.Fatalf("[scenario.main] Error marshal newUser with error %s", err)
+func main() {
+	var responses []testStruct
+	var responseTestStructHE = testStruct{
+		Message: "he",
 	}
+	var responseTestStructHEHE = testStruct{
+		Message: "hehe",
+	}
+
+	responses = append(responses, responseTestStructHEHE)
+
+	testMethod(&responseTestStructHE, &responses)
+
+	for _, res := range responses {
+		logrus.Info("res - ", res.Message)
+	}
+	logrus.Info("responseTestStructHE - ", responseTestStructHE.Message)
+}
+
+func testMethod(test *testStruct, testList *[]testStruct) {
+	*test = testStruct{
+		Message: "hello",
+	}
+	*testList = append(*testList, *test)
 }

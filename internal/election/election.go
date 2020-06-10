@@ -10,10 +10,7 @@ import (
 )
 
 // TODO think about a config file
-const waitingTime = time.Second * 2
-
-// store api callback here (empty array)
-var callbacks []callbackResponse
+const waitingTime = time.Second * 3
 
 /* METHODS overview:
 	- ReceiveMessage()             // get a message from a api (election, coordinator)
@@ -62,7 +59,7 @@ messageReceivedElection(InformationElectionDTO)
 3. send response back (answer)
 */
 func messageReceivedElection(electionInformation InformationElectionDTO, electionInformationResponse *InformationElectionDTO) {
-	logrus.Infof("[election.messageReceivedElection] election notification received, filter users")
+	logrus.Infof("[election.messageReceivedElection] election message received")
 	// 1. filter users to send election messages to (UserID > YourID)
 	var selectedUsers []id.InformationUserDTO
 	for _, user := range id.Users {
@@ -88,26 +85,24 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 		if err != nil {
 			logrus.Fatalf("[election.messageReceivedElection] Error marshal electionCoordinatorMessage with error %s", err)
 		}
+		// store api callback here (empty array)
+		var callbacks []id.InformationUserDTO
+		var didCallBackUsers []id.InformationUserDTO   // store all users who have replied
 		for _, user := range selectedUsers {
-			userCallback := callbackResponse{
-				userInfo:   user,
-				calledBack: false,
-			}
-			callbacks = append(callbacks, userCallback)
+			callbacks = append(callbacks, user)
 			// 2.3 GO - sendElectionMessage()
-			go sendElectionMessage(&userCallback, payload)
+			go sendElectionMessage(&didCallBackUsers, &user, payload)
 		}
 		logrus.Infof("[election.messageReceivedElection] election messages send, waiting " + waitingTime.String() + " seconds for a response")
 		// 2.4 wait a few seconds (enough time users can answer request)
 		time.Sleep(waitingTime)
 		// 2.6 Sort users who have called back and who are not
-		var didCallBackUsers []id.InformationUserDTO   // all users who have replied
-		var didntCallBackUsers []id.InformationUserDTO // all users who have not replied
-		for _, userCallback := range callbacks {
-			if userCallback.calledBack {
-				didCallBackUsers = append(didCallBackUsers, userCallback.userInfo)
-			} else {
-				didntCallBackUsers = append(didntCallBackUsers, userCallback.userInfo)
+		if len(callbacks) != len(didCallBackUsers) {
+			for _, user := range callbacks {
+				if id.ContainsUser(didCallBackUsers, user) {
+					logrus.Warnf("[election.messageReceivedElection] user %s did not call back", user.UserId)
+					id.DeleteUser(user)
+				}
 			}
 		}
 		// 2.7 if |answered users| <= 0
@@ -116,11 +111,8 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 			sendCoordinatorMessages(electionInformation)
 		}
 		// 2.8 remove all users how didn't answered from userList
-		for _, user := range didntCallBackUsers {
-			id.DeleteUser(user)
-		}
 		// 2.9 clear callback list
-		callbacks = []callbackResponse{}
+		callbacks = []id.InformationUserDTO{}
 	}
 	// 3. send response back (answer)
 	*electionInformationResponse = InformationElectionDTO{
@@ -138,10 +130,10 @@ ALGORITHM - OVERVIEW
 2.4.1 send POST request to client
 2.4.2 if response is OK check client callback
  */
-func sendElectionMessage(userCallback *callbackResponse, msgPayload []byte) {
+func sendElectionMessage(didCallback *[]id.InformationUserDTO, userInfoCallback *id.InformationUserDTO, msgPayload []byte) {
 	// 2.4.1 send POST request to client
-	logrus.Info("[election.sendElectionMessage] send election message to identity: " + userCallback.userInfo.UserId)
-	res, err := pkg.RequestPOST(userCallback.userInfo.Endpoint + RouteElection, string(msgPayload))
+	logrus.Info("[election.sendElectionMessage] send election message to identity: " + userInfoCallback.UserId)
+	res, err := pkg.RequestPOST(userInfoCallback.Endpoint + RouteElection, string(msgPayload))
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error send post request with error %s", err)
 	}
@@ -151,12 +143,10 @@ func sendElectionMessage(userCallback *callbackResponse, msgPayload []byte) {
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error Unmarshal electionAnswerResponse with error %s", err)
 	}
+	logrus.Infof("[election.sendElectionMessage] response received, user: %s", electionAnswerResponse.User)
 	if electionAnswerResponse.Payload == MessageAnswer {
-		// check client callback
-		*userCallback = callbackResponse{
-			userInfo: userCallback.userInfo,
-			calledBack: true,
-		}
+		// add client to clients how replied
+		*didCallback = append(*didCallback, *userInfoCallback)
 	}
 }
 
@@ -205,11 +195,4 @@ func sendCoordinatorMessages(electionInformation InformationElectionDTO) {
 		}
 	}
 	logrus.Info("[election.sendCoordinatorMessages] CoordinatorUserId message send to users")
-}
-
-/* STRUCT */
-// control callbacks after sending an election message
-type callbackResponse struct {
-	userInfo   id.InformationUserDTO // username as an identifier
-	calledBack bool                  // tells if a identity send a message back
 }

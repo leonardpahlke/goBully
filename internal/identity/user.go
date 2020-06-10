@@ -11,9 +11,26 @@ var Users []InformationUserDTO
 adds a identity to your identity pool
  */
 func AddUser(userInformation InformationUserDTO) {
-	Users = append(Users, userInformation)
-	logrus.Info("[api.AddUser] identity added " + userInformation.UserId)
+	if !ContainsUser(Users, userInformation) {
+		Users = append(Users, userInformation)
+		logrus.Infof("[api.AddUser] user %s added", userInformation.UserId)
+	} else {
+		logrus.Infof("[api.AddUser] user %s not added - already in user list ", userInformation.UserId)
+	}
 }
+
+/*
+return whether a user is in user list
+*/
+func ContainsUser(userList []InformationUserDTO, user InformationUserDTO) bool {
+	for _, a := range userList {
+		if a == user {
+			return true
+		}
+	}
+	return false
+}
+
 
 /*
 deletes a identity from your identity pool
@@ -24,11 +41,11 @@ func DeleteUser(userInformation InformationUserDTO) bool {
 			// delete identity from the list
 			Users[i] = Users[len(Users)-1]
 			Users = Users[:len(Users)-1]
-			logrus.Info("[api.DeleteUser] identity deleted " + userInformation.UserId)
+			logrus.Infof("[api.DeleteUser] identity deleted %s", userInformation.UserId)
 			return true
 		}
 	}
-	logrus.Warning("[api.DeleteUser] identity could not be found and deleted " + userInformation.UserId)
+	logrus.Warningf("[api.DeleteUser] identity could not be found and deleted %s", userInformation.UserId)
 	return false
 }
 

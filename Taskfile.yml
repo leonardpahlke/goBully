@@ -28,7 +28,7 @@ tasks:
     desc: Start docker-compose scenario containers
     cmds:
       - docker-compose build
-      - echo starting scenario listen on 8080, 8081, 8082
+      - echo starting scenario listen on ports 8080, 8081, 8082
       - docker-compose up
 
   sdown:
