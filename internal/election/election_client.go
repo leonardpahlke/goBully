@@ -34,6 +34,16 @@ func StartElectionAlgorithm(informationElectionDTO InformationElectionDTO) Infor
 	return response
 }
 
+/*
+Receive message public mapper
+*/
+func ReceiveMessage(electionInformation InformationElectionDTO) InformationElectionDTO {
+	return receiveMessage(electionInformation)
+}
+
+/*
+Helper method to enrich input data
+ */
 func TransformInputInfoElectionDTO(inputInformationElectionDTO InputInformationElectionDTO)InformationElectionDTO {
 	return InformationElectionDTO{
 		Algorithm: Algorithm,
@@ -41,6 +51,19 @@ func TransformInputInfoElectionDTO(inputInformationElectionDTO InputInformationE
 		User:      id.YourUserInformation.UserId,
 		Job:       inputInformationElectionDTO.Job,
 		Message:   inputInformationElectionDTO.Message,
+	}
+}
+
+/*
+Helper method to get a dummy election message
+ */
+func DummyElectionInfoDTO() InformationElectionDTO {
+	return InformationElectionDTO{
+		Algorithm: Algorithm,
+		Payload:   MessageElection,
+		User:      id.YourUserInformation.UserId,
+		Job:       InformationJobDTO{},
+		Message:   "origin adapterSendRegisterToService",
 	}
 }
 

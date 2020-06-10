@@ -35,7 +35,7 @@ task <task>
 task build
 ```
 
-**Stop Docker container**
+**Stop Docker container** leonardpahlke/gobully:latest
 ```
 docker stop $(docker ps -a -q --filter ancestor=leonardpahlke/gobully:latest --format="{{.ID}}")
 ```
@@ -65,9 +65,12 @@ may change
 │   │   └── election_client.go  // election public functions
 │   ├── identity
 │   │   └── user.go             // user definition
-│   └── service
-│       ├── register.go         // user register workflow
-│       └── rest.go             // api setup - endpoints
+│   ├── service
+│   │   ├── register.go         // user register workflow
+│   │   └── rest.go             // api setup - endpoints
+│   └── mutex
+│       ├── mutex.go            // mutex private functions
+│       └── mutex_client.go     // mutex public functions
 ├── pkg
 │   └── request.go              // rest http calls
 ├── .gitignore
@@ -83,7 +86,7 @@ may change
 
 `internal/election/election.go`
 
-	- ReceiveMessage()             // get a message from a service (election, coordinator)
+	- receiveMessage()             // get a message from a api (election, coordinator)
 	- messageReceivedElection()    // handle incoming election message
 	- sendElectionMessage()        // send a election message to another user
       ---------------------

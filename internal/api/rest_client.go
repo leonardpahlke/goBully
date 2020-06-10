@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"goBully/internal/election"
+	"goBully/internal/identity"
 	"time"
 )
 
@@ -21,13 +22,13 @@ func StartAPI(port string) {
 
 	// REST_REGISTER
 	// new identity register information
-	r.POST(RegisterRoute, adapterRegisterService)
+	r.POST(identity.RegisterRoute, adapterRegisterService)
 	// trigger identity register
-	r.POST(SendRegisterRoute + "/:userEndpoint" , adapterSendRegisterToService)
+	r.POST(identity.SendRegisterRoute+ "/:userEndpoint" , adapterSendRegisterToService)
 	// trigger identity unregister from other identity services
-	r.POST(UnRegisterRoute, adapterUnRegisterFromService)
+	r.POST(identity.UnRegisterRoute, adapterUnRegisterFromService)
 	// trigger identity unregister from other identity services
-	r.POST(SendUnRegisterRoute, adapterSendUnRegisterToServices)
+	r.POST(identity.SendUnRegisterRoute, adapterSendUnRegisterToServices)
 
 	// REST_ELECTION
 	// election algorithm endpoint
@@ -47,7 +48,13 @@ func StartAPI(port string) {
 func ConnectToService(connectTo string) {
 	time.Sleep(2 * time.Second)
 	logrus.Infof("[api.ConnectToService] Connect to service %s", connectTo)
-	registerToService(connectTo)
-	logrus.Infoln("[api.ConnectToService] Connection to " + connectTo + " complete")
+	// set user identities
+	msg := identity.RegisterToService(connectTo)
+
+	logrus.Infof("[api.ConnectToService] register response received, message: %s - starting election, ...", msg)
+	// start election to find a coordinator
+	election.StartElectionAlgorithm(election.DummyElectionInfoDTO())
+
+	logrus.Infof("[api.ConnectToService] Connection to: %s complete, finished election, new coordinator: %s", connectTo, election.CoordinatorUserId)
 	logrus.Print("----------------------")
 }

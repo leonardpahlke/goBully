@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"goBully/internal/election"
 	id "goBully/internal/identity"
 )
 
@@ -32,12 +33,12 @@ import (
 //  '403':
 //    description: operation not available
 func adapterRegisterService(c *gin.Context) {
-	var serviceRegisterInfo RegisterInfoDTO
+	var serviceRegisterInfo id.RegisterInfoDTO
 	err := c.BindJSON(&serviceRegisterInfo)
 	if err != nil {
 		logrus.Fatalf("[api.adapterRegisterService] Error marshal serviceRegisterInfo with error %s", err)
 	}
-	serviceRegisterResponse := receiveServiceRegister(serviceRegisterInfo)
+	serviceRegisterResponse := id.ReceiveServiceRegister(serviceRegisterInfo)
 	// return all registered users to new identity
 	c.JSON(200, serviceRegisterResponse)
 }
@@ -67,7 +68,12 @@ func adapterSendRegisterToService(c *gin.Context) {
 	// send post request to other endpoint to trigger connection cycle
 	userEndpoint, _ := c.Params.Get("userEndpoint")
 	logrus.Infof("[api.adapterSendRegisterToService] Received userEndpoint: %s", userEndpoint)
-	msg := registerToService(userEndpoint)
+	msg := id.RegisterToService(userEndpoint)
+
+	logrus.Infof("[api.adapterSendRegisterToService] register response received, message: %s - starting election, ...", msg)
+	// start election to find a coordinator
+	election.StartElectionAlgorithm(election.DummyElectionInfoDTO())
+
 	// response check only if request was success full and has no further impact
 	c.String(200, msg)
 }
@@ -102,7 +108,7 @@ func adapterUnRegisterFromService(c *gin.Context) {
 	if err != nil {
 		logrus.Fatalf("[api.adapterUnRegisterFromService] Error marshal informationUserDTO with error %s", err)
 	}
-	success := unregisterUserFromYourUserList(informationUserDTO)
+	success := id.UnregisterUserFromYourUserList(informationUserDTO)
 	if success {
 		c.String(200, DefaultSuccessMessage)
 	} else {
@@ -126,7 +132,7 @@ func adapterUnRegisterFromService(c *gin.Context) {
 //    description: operation not available
 func adapterSendUnRegisterToServices(c *gin.Context) {
 	// trigger method to send all unregister messages to users
-	success := sendUnregisterUserFromYourUserList()
+	success := id.SendUnregisterUserFromYourUserList()
 	if success {
 		c.String(200, DefaultSuccessMessage)
 	} else {

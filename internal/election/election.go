@@ -13,7 +13,7 @@ import (
 const waitingTime = time.Second * 3
 
 /* METHODS overview:
-	- ReceiveMessage()             // get a message from a api (election, coordinator)
+	- receiveMessage()             // get a message from a api (election, coordinator)
 	- messageReceivedElection()    // handle incoming election message
 	- sendElectionMessage()        // send a election message to another user
       ---------------------
@@ -22,16 +22,16 @@ const waitingTime = time.Second * 3
  */
 
 /*
-ReceiveMessage POST (Hero <- Hero) - receive message
+receiveMessage POST (Hero <- Hero) - receive message
  */
-func ReceiveMessage(electionInformation InformationElectionDTO) InformationElectionDTO {
+func receiveMessage(electionInformation InformationElectionDTO) InformationElectionDTO {
 	// response is set in messageReceivedCoordinator && messageReceivedElection
 	var electionInformationResponse InformationElectionDTO
 
 	switch electionInformation.Payload {
 		case MessageCoordinator: messageReceivedCoordinator(electionInformation, &electionInformationResponse)
 		case MessageElection: messageReceivedElection(electionInformation, &electionInformationResponse)
-		default: fmt.Printf("[election.ReceiveMessage] message: %s, could not get parsed - abroad ", electionInformation.Algorithm)
+		default: fmt.Printf("[election.receiveMessage] message: %s, could not get parsed - abroad ", electionInformation.Algorithm)
 	}
 	return electionInformationResponse
 }
