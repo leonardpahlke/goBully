@@ -43,7 +43,7 @@ definitions:
         description: data to use/post for the task
         type: string
         x-go-name: Data
-      id:
+      identity:
         description: some identity chosen by the initiator to identify this request
         type: string
         x-go-name: Id
@@ -64,7 +64,7 @@ definitions:
         type: string
         x-go-name: Task
     required:
-    - id
+    - identity
     - task
     - resource
     - method
@@ -125,6 +125,33 @@ definitions:
     - message
     type: object
     x-go-package: goBully/internal/election
+  MessageMutexDTO:
+    description: mutex message
+    properties:
+      msg:
+        description: message, reply-ok or request
+        type: string
+        x-go-name: Msg
+      reply:
+        description: url to the endpoint where responses shall be send
+        type: string
+        x-go-name: Reply
+      time:
+        description: the current lamport clock
+        format: int32
+        type: integer
+        x-go-name: Time
+      user:
+        description: url to the user sending the message
+        type: string
+        x-go-name: User
+    required:
+    - msg
+    - time
+    - reply
+    - user
+    type: object
+    x-go-package: goBully/internal/mutex
   RegisterInfoDTO:
     description: object sending id api to register yourself
     properties:
@@ -145,7 +172,7 @@ definitions:
     - new_user_id
     - endpoint
     type: object
-    x-go-package: goBully/internal/api
+    x-go-package: goBully/internal/identity
   RegisterResponseDTO:
     description: response object after register to id api
     properties:
@@ -163,7 +190,24 @@ definitions:
     - message
     - user_id_infos
     type: object
-    x-go-package: goBully/internal/api
+    x-go-package: goBully/internal/identity
+  StateMutexDTO:
+    description: mutex state
+    properties:
+      state:
+        description: 'current state: released, wanting or held'
+        type: string
+        x-go-name: State
+      time:
+        description: the current lamport clock
+        format: int32
+        type: integer
+        x-go-name: Time
+    required:
+    - state
+    - time
+    type: object
+    x-go-package: goBully/internal/mutex
 host: localhost
 info:
   description: |-
@@ -203,6 +247,51 @@ paths:
           description: error in operation
       tags:
       - election
+  /mutex:
+    post:
+      consumes:
+      - application/json
+      description: handle mutex message
+      operationId: mutexMessage
+      parameters:
+      - description: mutex message information
+        in: body
+        name: mutex
+        required: true
+        schema:
+          $ref: '#/definitions/MessageMutexDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: '#/definitions/MessageMutexDTO'
+        "403":
+          description: operation not available
+        "404":
+          description: error in operation
+      tags:
+      - mutex
+  /mutexstate:
+    get:
+      consumes:
+      - application/json
+      description: handle mutex a state request message
+      operationId: mutexStateRequest
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: successful operation
+          schema:
+            $ref: '#/definitions/StateMutexDTO'
+        "403":
+          description: operation not available
+        "404":
+          description: error in operation
+      tags:
+      - mutex
   /register:
     post:
       consumes:
@@ -212,7 +301,7 @@ paths:
       parameters:
       - description: send register information to get in the network
         in: body
-        name: api
+        name: register
         required: true
         schema:
           $ref: '#/definitions/RegisterInfoDTO'
@@ -228,7 +317,7 @@ paths:
         "404":
           description: error in operation
       tags:
-      - register
+      - user
   /sendregister:
     post:
       consumes:
@@ -238,7 +327,7 @@ paths:
       parameters:
       - description: trigger registration, api sends registration message to other
         in: query
-        name: userEndpoint
+        name: sendregister
         required: true
         type: number
       produces:
@@ -251,7 +340,7 @@ paths:
         "404":
           description: error in operation
       tags:
-      - register
+      - user
   /sendunregister:
     post:
       consumes:
@@ -268,7 +357,7 @@ paths:
         "404":
           description: error in operation
       tags:
-      - register
+      - user
   /startelection:
     post:
       consumes:
@@ -278,7 +367,7 @@ paths:
       parameters:
       - description: start election algorithm - to get a coordinator
         in: body
-        name: election
+        name: startelection
         required: true
         schema:
           $ref: '#/definitions/InputInformationElectionDTO'
@@ -323,7 +412,7 @@ paths:
       parameters:
       - description: some api is unregistering from all users, remove user from active users
         in: body
-        name: api
+        name: unregister
         required: true
         schema:
           $ref: '#/definitions/InformationUserDTO'
@@ -337,7 +426,7 @@ paths:
         "404":
           description: error in operation
       tags:
-      - register
+      - user
   /users:
     get:
       consumes:

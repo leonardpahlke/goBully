@@ -6,7 +6,6 @@ import (
 )
 
 // Public function to interact with election
-
 const Algorithm = "bully"
 
 // API Endpoints
@@ -94,7 +93,7 @@ type InformationElectionDTO struct {
 	// uri of the identity sending this request
 	// required: true
 	User      string            `json:"identity"`
-	// jon information in InformationJobDTO
+	// job information in InformationJobDTO
 	// required: true
 	Job       InformationJobDTO `json:"job"`
 	// something you want to tell the other one

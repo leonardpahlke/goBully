@@ -46,10 +46,10 @@ messageReceivedElection(InformationElectionDTO)
 2. if |filtered users| <= 0
    	YES: 2.1 you have the highest ID and win - send coordinatorMessages - exit
    	NO : 2.2 transform message and create POST payload
-		 2.3 add callback information to local callbackList
+		 2.3 add user information to local callbackList
          2.4 GO - sendElectionMessage(callbackResponse, msgPayload)
             2.4.1 send POST request to client
-            2.4.2 if response is OK check client callback
+            2.4.2 if response is OK add client to client who have responded responded
          2.5 wait a few seconds (enough time users can answer request)
          2.6 Sort users who have called back and who are not
          2.7 if |answered users| <= 0
@@ -85,16 +85,16 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 		if err != nil {
 			logrus.Fatalf("[election.messageReceivedElection] Error marshal electionCoordinatorMessage with error %s", err)
 		}
-		// store api callback here (empty array)
 		var callbacks []identity.InformationUserDTO
 		var didCallBackUsers []identity.InformationUserDTO // store all users who have replied
 		for _, user := range selectedUsers {
+			// 2.3 add user information to local callbackList
 			callbacks = append(callbacks, user)
-			// 2.3 GO - sendElectionMessage()
+			// 2.4 GO - sendElectionMessage()
 			go sendElectionMessage(&didCallBackUsers, &user, payload)
 		}
 		logrus.Infof("[election.messageReceivedElection] election messages send, waiting " + waitingTime.String() + " seconds for a response")
-		// 2.4 wait a few seconds (enough time users can answer request)
+		// 2.5 wait a few seconds (enough time users can answer request)
 		time.Sleep(waitingTime)
 		// 2.6 Sort users who have called back and who are not
 		if len(callbacks) != len(didCallBackUsers) {
@@ -128,7 +128,7 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 sendElectionMessage POST (Hero -> Hero)
 ALGORITHM - OVERVIEW
 2.4.1 send POST request to client
-2.4.2 if response is OK check client callback
+2.4.2 if response is OK add client to client who have responded responded
  */
 func sendElectionMessage(didCallback *[]identity.InformationUserDTO, userInfoCallback *identity.InformationUserDTO, msgPayload []byte) {
 	// 2.4.1 send POST request to client
@@ -137,7 +137,7 @@ func sendElectionMessage(didCallback *[]identity.InformationUserDTO, userInfoCal
 	if err != nil {
 		logrus.Fatalf("[election.sendElectionMessage] Error send post request with error %s", err)
 	}
-	// 2.4.2 if response is OK check client callback
+	// 2.4.2 if response is OK add client to client who have responded responded
 	var electionAnswerResponse InformationElectionDTO
 	err = json.Unmarshal(res, &electionAnswerResponse)
 	if err != nil {

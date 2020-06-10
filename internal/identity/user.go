@@ -2,6 +2,10 @@ package identity
 
 import "github.com/sirupsen/logrus"
 
+// PUBLIC
+// API Endpoints
+const RouteUserInfo = "/users"
+
 // your identity information
 var YourUserInformation InformationUserDTO
 // store all active users (including YourUserInformation)

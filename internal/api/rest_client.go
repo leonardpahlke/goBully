@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"goBully/internal/election"
 	"goBully/internal/identity"
+	"goBully/internal/mutex"
 	"time"
 )
 
@@ -18,9 +19,7 @@ func StartAPI(port string) {
 
 	// REST_USER
 	// new identity register information
-	r.GET("/users", adapterUsersInfo)
-
-	// REST_REGISTER
+	r.GET(identity.RouteUserInfo, adapterUsersInfo)
 	// new identity register information
 	r.POST(identity.RegisterRoute, adapterRegisterService)
 	// trigger identity register
@@ -37,6 +36,12 @@ func StartAPI(port string) {
 	r.POST(election.StartRouteElection, adapterStartElectionMessage)
 	// start test election with static input
 	r.POST(election.StartStaticRouteElection, adapterStartStaticElectionMessage)
+
+	// REST_MUTEX
+	// mutex message endpoint
+	r.POST(mutex.RouteMutexMessage, adapterMutexMessage)
+	// mutex state message endpoint
+	r.GET(mutex.RouteMutexState, adapterMutexStateMessage)
 
 	// start api server
 	err := r.Run(":" + port)

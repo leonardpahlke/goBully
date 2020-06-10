@@ -100,20 +100,20 @@ may change
 more details
 
 ```
-messageReceivedElection()
+messageReceivedElection(InformationElectionDTO)
 1. filter users to send election messages to (UserID > YourID)
 2. if |filtered users| <= 0
    	YES: 2.1 you have the highest ID and win - send coordinatorMessages - exit
    	NO : 2.2 transform message and create POST payload
-		 2.3 add callback information to local callbackList
-         2.4 GO - sendElectionMessage()
+		 2.3 add user information to local callbackList
+         2.4 GO - sendElectionMessage(callbackResponse, msgPayload)
             2.4.1 send POST request to client
-            2.4.2 if response is OK check client callback
+            2.4.2 if response is OK add client to client who have responded responded
          2.5 wait a few seconds (enough time users can answer request)
          2.6 Sort users who have called back and who are not
          2.7 if |answered users| <= 0
-			2.7.1 YES: send coordinatorMessages - exit
-			2.7.2 NO : remove all users how didn't answered from userList
-         2.8 clear callback list
+			2.7.1 YES: send coordinatorMessages
+		 2.8 remove all users how didn't answered from userList
+         2.9 clear callback list
 3. send response back (answer)
 ```
