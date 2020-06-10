@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	id "goBully/internal/identity"
+	"goBully/internal/identity"
 	"goBully/pkg"
 	"time"
 )
@@ -61,9 +61,9 @@ messageReceivedElection(InformationElectionDTO)
 func messageReceivedElection(electionInformation InformationElectionDTO, electionInformationResponse *InformationElectionDTO) {
 	logrus.Infof("[election.messageReceivedElection] election message received")
 	// 1. filter users to send election messages to (UserID > YourID)
-	var selectedUsers []id.InformationUserDTO
-	for _, user := range id.Users {
-		if user.UserId > id.YourUserInformation.UserId {
+	var selectedUsers []identity.InformationUserDTO
+	for _, user := range identity.Users {
+		if user.UserId > identity.YourUserInformation.UserId {
 			selectedUsers = append(selectedUsers, user)
 		}
 	}
@@ -77,7 +77,7 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 		myElectionInformation := InformationElectionDTO{
 			Algorithm: electionInformation.Algorithm,
 			Payload:   MessageElection,
-			User:      id.YourUserInformation.UserId,
+			User:      identity.YourUserInformation.UserId,
 			Job:       electionInformation.Job,
 			Message:   "election in progress please answer me",
 		}
@@ -86,8 +86,8 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 			logrus.Fatalf("[election.messageReceivedElection] Error marshal electionCoordinatorMessage with error %s", err)
 		}
 		// store api callback here (empty array)
-		var callbacks []id.InformationUserDTO
-		var didCallBackUsers []id.InformationUserDTO   // store all users who have replied
+		var callbacks []identity.InformationUserDTO
+		var didCallBackUsers []identity.InformationUserDTO // store all users who have replied
 		for _, user := range selectedUsers {
 			callbacks = append(callbacks, user)
 			// 2.3 GO - sendElectionMessage()
@@ -99,9 +99,9 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 		// 2.6 Sort users who have called back and who are not
 		if len(callbacks) != len(didCallBackUsers) {
 			for _, user := range callbacks {
-				if id.ContainsUser(didCallBackUsers, user) {
+				if identity.ContainsUser(didCallBackUsers, user) {
 					logrus.Warnf("[election.messageReceivedElection] user %s did not call back", user.UserId)
-					id.DeleteUser(user)
+					identity.DeleteUser(user)
 				}
 			}
 		}
@@ -112,13 +112,13 @@ func messageReceivedElection(electionInformation InformationElectionDTO, electio
 		}
 		// 2.8 remove all users how didn't answered from userList
 		// 2.9 clear callback list
-		callbacks = []id.InformationUserDTO{}
+		callbacks = []identity.InformationUserDTO{}
 	}
 	// 3. send response back (answer)
 	*electionInformationResponse = InformationElectionDTO{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   MessageAnswer,
-		User:      id.YourUserInformation.UserId,
+		User:      identity.YourUserInformation.UserId,
 		Job:       electionInformation.Job,
 		Message:   "election message send to the others",
 	}
@@ -130,7 +130,7 @@ ALGORITHM - OVERVIEW
 2.4.1 send POST request to client
 2.4.2 if response is OK check client callback
  */
-func sendElectionMessage(didCallback *[]id.InformationUserDTO, userInfoCallback *id.InformationUserDTO, msgPayload []byte) {
+func sendElectionMessage(didCallback *[]identity.InformationUserDTO, userInfoCallback *identity.InformationUserDTO, msgPayload []byte) {
 	// 2.4.1 send POST request to client
 	logrus.Info("[election.sendElectionMessage] send election message to identity: " + userInfoCallback.UserId)
 	res, err := pkg.RequestPOST(userInfoCallback.Endpoint + RouteElection, string(msgPayload))
@@ -162,7 +162,7 @@ func messageReceivedCoordinator(electionInformation InformationElectionDTO, elec
 	*electionInformationResponse = InformationElectionDTO{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   MessageAnswer,
-		User:      id.YourUserInformation.UserId,
+		User:      identity.YourUserInformation.UserId,
 		Job:       electionInformation.Job,
 		Message:   "OK",
 	}
@@ -180,7 +180,7 @@ func sendCoordinatorMessages(electionInformation InformationElectionDTO) {
 		Algorithm: electionInformation.Algorithm,
 		Payload:   MessageCoordinator,
 		Job:       electionInformation.Job,
-		User:      id.YourUserInformation.UserId,
+		User:      identity.YourUserInformation.UserId,
 		Message:   "new elected coordinator found",
 	}
 	payload, err := json.Marshal(electionCoordinatorMessage)
@@ -188,7 +188,7 @@ func sendCoordinatorMessages(electionInformation InformationElectionDTO) {
 		logrus.Fatalf("[election.sendCoordinatorMessages] Error marshal electionCoordinatorMessage with error %s", err)
 	}
 	// 2. send all users the coordinator message
-	for _, user := range id.Users {
+	for _, user := range identity.Users {
 		_, err := pkg.RequestPOST(user.Endpoint + RouteElection, string(payload))
 		if err != nil {
 			logrus.Fatalf("[election.sendCoordinatorMessages] Error sending post request to identity with error %s", err)

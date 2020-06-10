@@ -2,7 +2,7 @@ package election
 
 import (
 	"github.com/sirupsen/logrus"
-	id "goBully/internal/identity"
+	"goBully/internal/identity"
 )
 
 // Public function to interact with election
@@ -48,7 +48,7 @@ func TransformInputInfoElectionDTO(inputInformationElectionDTO InputInformationE
 	return InformationElectionDTO{
 		Algorithm: Algorithm,
 		Payload:   inputInformationElectionDTO.Payload,
-		User:      id.YourUserInformation.UserId,
+		User:      identity.YourUserInformation.UserId,
 		Job:       inputInformationElectionDTO.Job,
 		Message:   inputInformationElectionDTO.Message,
 	}
@@ -61,7 +61,7 @@ func DummyElectionInfoDTO() InformationElectionDTO {
 	return InformationElectionDTO{
 		Algorithm: Algorithm,
 		Payload:   MessageElection,
-		User:      id.YourUserInformation.UserId,
+		User:      identity.YourUserInformation.UserId,
 		Job:       InformationJobDTO{},
 		Message:   "origin adapterSendRegisterToService",
 	}
@@ -107,7 +107,7 @@ type InformationElectionDTO struct {
 type InformationJobDTO struct {
 	// some identity chosen by the initiator to identify this request
 	// required: true
-	Id       string `json:"id"`
+	Id       string `json:"identity"`
 	// uri to the task to accomplish
 	// required: true
 	Task     string `json:"task"`

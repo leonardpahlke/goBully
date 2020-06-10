@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"goBully/internal/election"
-	id "goBully/internal/identity"
+	"goBully/internal/identity"
 )
 
 // swagger:operation POST /election election electionMessage
@@ -93,7 +93,7 @@ func adapterStartStaticElectionMessage(c *gin.Context) {
 	var electionInformation = election.InformationElectionDTO{
 		Algorithm: election.Algorithm,
 		Payload:   election.MessageElection,
-		User:      id.YourUserInformation.UserId,
+		User:      identity.YourUserInformation.UserId,
 		Job:       election.InformationJobDTO{},
 		Message:   "origin adapterStartStaticElectionMessage",
 	}

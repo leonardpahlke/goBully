@@ -56,7 +56,7 @@ may change
 ├── api
 │   └── swagger.yml             // swagger api dcumentation
 ├── assets
-│   └── ...                     // pictures and stuff
+│   └── goBully.jpg             // pictures and stuff
 ├── cmd
 │   └── main.go                 // starting point of the application
 ├── internal
@@ -64,19 +64,23 @@ may change
 │   │   ├── election.go         // election private functions
 │   │   └── election_client.go  // election public functions
 │   ├── identity
-│   │   └── user.go             // user definition
-│   ├── service
 │   │   ├── register.go         // user register workflow
-│   │   └── rest.go             // api setup - endpoints
+│   │   └── user.go             // user definition
+│   ├── api
+│   │   ├── doc.go              // rest general documentation info
+│   │   ├── rest_client.go      // api setup
+│   │   ├── rest_election.go    // election rest endpoints
+│   │   ├── rest_mutex.go       // mutex rest endpoints
+│   │   └── rest_user.go        // user rest endpoints
 │   └── mutex
 │       ├── mutex.go            // mutex private functions
 │       └── mutex_client.go     // mutex public functions
 ├── pkg
 │   └── request.go              // rest http calls
 ├── .gitignore
-├── docker-compose.yml          // dockercompose run szenario
+├── docker-compose.yml          // docker-compose szenario
 ├── Dockerfile                  // docker container script
-├── Taskfile.yml                // build scripts - powered by Task
+├── Taskfile.yml                // build scripts
 ├── go.mod                      // go module information
 ├── go.sum                      // go module libary imports
 └── README.md
