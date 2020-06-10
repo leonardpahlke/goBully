@@ -236,15 +236,9 @@ paths:
       description: User sends register request to another user and kick off election to get the new coordinator
       operationId: triggerRegisterToService
       parameters:
-      - description: start election algorithm - to get a coordinator
-        in: body
-        name: electionInformation
-        required: true
-        schema:
-          $ref: '#/definitions/InformationElectionDTO'
       - description: trigger registration, api sends registration message to other
         in: query
-        name: ip
+        name: userEndpoint
         required: true
         type: number
       produces:

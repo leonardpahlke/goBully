@@ -7,9 +7,6 @@ import (
 	"strings"
 )
 
-const LocalhostName = "localhost"
-const LocalhostIP = "127.0.0.1"
-
 // RequestGET - send http get request
 func RequestGET(url string) ([]byte, error) {
 	req, err := http.NewRequest("GET", url, nil)
@@ -33,6 +30,8 @@ func RequestGET(url string) ([]byte, error) {
 
 // RequestPOST - send http post request
 func RequestPOST(url string, payloadString string) ([]byte, error) {
+	url = strings.Replace(url, "\\", "", 100)
+	url = strings.Replace(url, " ", "", 100)
 	payload := strings.NewReader(payloadString)
 	req, err := http.NewRequest("POST", url, payload)
 	if err != nil {

@@ -14,6 +14,7 @@ func main() {
 	// environment variables
 	userID := os.Getenv("USERID")
 	endpoint := os.Getenv("ENDPOINT")
+	connectTo := os.Getenv("CONNECT")
 	port := strings.SplitAfter(endpoint, ":")[1]
 
 	// set identity information
@@ -24,6 +25,9 @@ func main() {
 	// add yourself to identity list
 	identity.AddUser(identity.YourUserInformation)
 
+	if connectTo != "null" {
+		go api.ConnectToService(connectTo)
+	}
 	// start api
 	logrus.Infof("[main] Service Information set, starting api")
 	api.StartAPI(port)

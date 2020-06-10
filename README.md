@@ -21,11 +21,10 @@ For more information, see the code comments and the Swagger documentation.
 task --list
 task: Available tasks for this project:
 * build:        Build docker container
-* connect:      Connect to docker container
 * run:          Start docker container
-* stop:         Stop running docker container
+* sdown:        Stop docker-compose scenario
+* sup:          Start docker-compose scenario
 * swagger:      Generate swagger.yml and start local server
-* szenario:     Start docker-compose scenario
 * update:       Update project dependencies
 ```
 **Run commands**

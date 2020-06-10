@@ -1,0 +1,26 @@
+version: "3.3"
+services:
+  gobully1:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - USERID=exampleUser0
+      - ENDPOINT=gobully1:8080
+      - CONNECT=null
+  gobully2:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - USERID=exampleUser1
+      - ENDPOINT=gobully2:8081
+      - CONNECT=gobully1:8080
+  gobully3:
+    image: leonardpahlke/gobully:latest
+    ports:
+      - "8082:8082"
+    environment:
+      - USERID=exampleUser2
+      - ENDPOINT=gobully3:8082
+      - CONNECT=gobully1:8080

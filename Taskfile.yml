@@ -24,11 +24,17 @@ tasks:
       - swagger generate spec -o ./api/swagger.yml --scan-models
       - swagger serve ./api/swagger.yml
 
-  szenario:
-    deps: [build]
-    desc: Start docker-compose scenario
+  sup:
+    desc: Start docker-compose scenario containers
     cmds:
-      - echo TODO
+      - docker-compose build
+      - echo starting scenario listen on 8080, 8081, 8082
+      - docker-compose up
+
+  sdown:
+    desc: Stop docker-compose scenario containers
+    cmds:
+      - docker-compose down
 
   update:
     desc: Update project dependencies
