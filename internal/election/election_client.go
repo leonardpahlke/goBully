@@ -3,10 +3,15 @@ package election
 import (
 	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
+	"time"
 )
+
+// TODO enhancement - config file
 
 // Public function to interact with election
 const Algorithm = "bully"
+
+const WaitingTime = time.Second * 3
 
 // API Endpoints
 const RouteElection = "/election"

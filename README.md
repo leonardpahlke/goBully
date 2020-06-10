@@ -1,10 +1,12 @@
 # goBully
 
-Project is under active development and not finished yet
+Learning project to understand how to implement the bully algorithm and a distributed mutex with docker containers
 
-This project implements the bully algorithm with docker containers. 
-Several containers are served, each of which is accessible with a rest API. 
-For more information, see the code comments and the Swagger documentation. 
+This project implements the bully algorithm as well as a distributed mutex with docker containers. 
+Several containers are served, each of which is accessible over a REST API. 
+For more information about that, take a look at the code comments and the swagger documentation `task swagger`.
+
+Details about the implementation of the Bully algorithm and the distributed mutex are shown below  
 
 ## Install
 
@@ -47,8 +49,6 @@ may change
 - bully algorithm scenario with docker-compose simulated 
 - detailed swagger documentation [Swagger yml](api/swagger.yml) with [go-swagger](https://github.com/go-swagger/go-swagger)
 
-![goBully](assets/goBully.jpg)
-
 ## Project folder structure
 
 ```
@@ -85,22 +85,26 @@ may change
 ├── go.sum                      // go module libary imports
 └── README.md
 ```
+**Project Dependencies**
+![goBullyDependencies](assets/project-dependencies.jpg)
 
 ## Bully Algorithm implementation
 
+![goBully](assets/goBully.jpg)
+
 `internal/election/election.go`
 
-	- receiveMessage()             // get a message from a api (election, coordinator)
-	- messageReceivedElection()    // handle incoming election message
-	- sendElectionMessage()        // send a election message to another user
+	- receiveMessage()            // get a message from a api (election, coordinator)
+	- receiveMessageElection()    // handle incoming election message
+	- sendMessageElection()       // send a election message to another user
       ---------------------
-	- messageReceivedCoordinator() // set local coordinator reference with incoming details
-	- sendCoordinatorMessages()    // send coordinator messages to other users
+	- receiveMessageCoordinator() // set local coordinator reference with incoming details
+	- sendMessagesCoordinator()   // send coordinator messages to other users
 	
-more details
+*more details*
 
 ```
-messageReceivedElection(InformationElectionDTO)
+receiveMessageElection(InformationElectionDTO)
 1. filter users to send election messages to (UserID > YourID)
 2. if |filtered users| <= 0
    	YES: 2.1 you have the highest ID and win - send coordinatorMessages - exit
@@ -116,4 +120,36 @@ messageReceivedElection(InformationElectionDTO)
 		 2.8 remove all users how didn't answered from userList
          2.9 clear callback list
 3. send response back (answer)
+```
+
+## Mutex implementation
+
+It goes like this with 3 clients (**A**,**B**,**C**):
+- Client **A** wants to enter the critical section
+- **A** sends _request_ with his clock to **A**,**B**,**C**
+- **B** is currently `in` the critical section, does store the _request_
+- **C** is `idle` and sends _reply-ok_
+- **A** sends himself an _reply-ok_
+- **C** wants to enter the critical section & sends _request_ to **A**,**B**,**C**
+- **A** `waits` for the mutex and his request has a lower clock, therefore stores the _request_
+- **B** is `in` the critical section, therefore stores the _request_
+- **B** finishes his critical section
+- **B** sends _reply-ok_ to the stored requests of **A** and **C**
+- **A** got all required _reply-ok_ and may now enter the critical section
+- **C** still `waits`.
+- **A** has finished his critical section and sends _reply-ok_ to the stored request of **C**
+- **C** got all required _reply-ok_ and may now enter the critical section
+
+`internal/mutex/mutex.go`
+
+	- receiveMutexMessage()       // get a message from a api (election, coordinator)
+	- receivedRequestMessage()    // handle incoming request message
+	- receivedReplyMessage()      // handle incoming reply message
+      ---------------------
+	TODO
+
+*more details*
+
+```
+TODO
 ```

@@ -1,6 +1,11 @@
 package mutex
 
-import "github.com/sirupsen/logrus"
+import (
+	"github.com/sirupsen/logrus"
+	"goBully/internal/identity"
+)
+
+// TODO enhancement - config file
 
 // PUBLIC
 // API Endpoints
@@ -14,13 +19,17 @@ const StateHeld = "held"
 
 // messages send across clients
 const RequestMessage = "request"
-const ReplyMessage = "reply-ok"
+const ReplyOKMessage = "reply-ok"
+
+// static mutex val's
+var mutexYourReply = identity.YourUserInformation.Endpoint
+var mutexYourUser = RouteMutexMessage
 
 // PRIVATE
 // local lamport clock
 var clock int32 = 0
 // local mutex state
-var state = StateHeld
+var state = StateReleased
 
 /*
 ReceiveMutexMessage - receive a mutex message from a user
