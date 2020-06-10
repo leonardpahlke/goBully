@@ -13,9 +13,9 @@ adds a identity to your identity pool
 func AddUser(userInformation InformationUserDTO) {
 	if !ContainsUser(Users, userInformation) {
 		Users = append(Users, userInformation)
-		logrus.Infof("[api.AddUser] user %s added", userInformation.UserId)
+		logrus.Infof("[identity.AddUser] user %s added", userInformation.UserId)
 	} else {
-		logrus.Infof("[api.AddUser] user %s not added - already in user list ", userInformation.UserId)
+		logrus.Infof("[identity.AddUser] user %s not added - already in user list ", userInformation.UserId)
 	}
 }
 
@@ -41,11 +41,11 @@ func DeleteUser(userInformation InformationUserDTO) bool {
 			// delete identity from the list
 			Users[i] = Users[len(Users)-1]
 			Users = Users[:len(Users)-1]
-			logrus.Infof("[api.DeleteUser] identity deleted %s", userInformation.UserId)
+			logrus.Infof("[identity.DeleteUser] identity deleted %s", userInformation.UserId)
 			return true
 		}
 	}
-	logrus.Warningf("[api.DeleteUser] identity could not be found and deleted %s", userInformation.UserId)
+	logrus.Warningf("[identity.DeleteUser] identity could not be found and deleted %s", userInformation.UserId)
 	return false
 }
 

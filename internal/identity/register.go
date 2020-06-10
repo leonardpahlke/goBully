@@ -18,7 +18,7 @@ const SendUnRegisterRoute = "/sendunregister"
 ReceiveServiceRegister - get user credentials from a new user and send them to the other connected users if new user send data directly to you
  */
 func ReceiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterResponseDTO {
-	logrus.Infof("[api.ReceiveServiceRegister] register information received from %s", serviceRegisterInfo.DistributingUserId)
+	logrus.Infof("[identity.ReceiveServiceRegister] register information received from %s", serviceRegisterInfo.DistributingUserId)
 	// check if sending id is also new id (-> do we have to notify other services?)
 	distributingUserIsNewUser := serviceRegisterInfo.DistributingUserId == serviceRegisterInfo.NewUserId
 	// create newUser information
@@ -38,7 +38,7 @@ func ReceiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 		}
 		payload, err := json.Marshal(myRegisterInfo)
 		if err != nil {
-			logrus.Fatalf("[api.ReceiveServiceRegister] Error marshal newUser with error %s", err)
+			logrus.Fatalf("[identity.ReceiveServiceRegister] Error marshal newUser with error %s", err)
 		}
 		var sendRegistrationTo = "["
 		for _, user := range Users {
@@ -48,14 +48,14 @@ func ReceiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 				sendRegistrationTo = sendRegistrationTo + user.UserId + ", "
 				res, err := pkg.RequestPOST(user.Endpoint +RegisterRoute, string(payload))
 				if err != nil {
-					logrus.Fatalf("[api.ReceiveServiceRegister] Error sending post request with error %s", err)
+					logrus.Fatalf("[identity.ReceiveServiceRegister] Error sending post request with error %s", err)
 				}
 				var registerResponse RegisterResponseDTO
 				err = json.Unmarshal(res, &registerResponse)
 				if err != nil {
-					logrus.Fatalf("[api.ReceiveServiceRegister] Error Unmarshal post response with error %s", err)
+					logrus.Fatalf("[identity.ReceiveServiceRegister] Error Unmarshal post response with error %s", err)
 				}
-				logrus.Infof("[api.ReceiveServiceRegister] register information send to service: %s", user.Endpoint)
+				logrus.Infof("[identity.ReceiveServiceRegister] register information send to service: %s", user.Endpoint)
 			}
 		}
 		sendRegistrationTo = sendRegistrationTo + "]"
@@ -82,17 +82,17 @@ func RegisterToService(userEndpoint string) string {
 		Endpoint:           YourUserInformation.Endpoint,
 	})
 	if err != nil {
-		logrus.Fatalf("[api.RegisterToService] Error marshal newUser with error %s", err)
+		logrus.Fatalf("[identity.RegisterToService] Error marshal newUser with error %s", err)
 	}
 	logrus.Info("[api.RegisterToService] prepare POST to register to endpoint: " + endpointToRegisterTo)
 	res, err := pkg.RequestPOST(endpointToRegisterTo +RegisterRoute, string(payload))
 	if err != nil {
-		logrus.Fatalf("[api.RegisterToService] Error sending POST request with error %s", err)
+		logrus.Fatalf("[identity.RegisterToService] Error sending POST request with error %s", err)
 	}
 	var registerResponse RegisterResponseDTO
 	err = json.Unmarshal(res, &registerResponse)
 	if err != nil {
-		logrus.Fatalf("[api.RegisterToService] Error Unmarshal registerResponse with error %s", err)
+		logrus.Fatalf("[identity.RegisterToService] Error Unmarshal registerResponse with error %s", err)
 	}
 	// set Users with all UserIdInfos (yours included)
 	Users = registerResponse.UserIdInfos
@@ -104,7 +104,7 @@ func RegisterToService(userEndpoint string) string {
 UnregisterUserFromYourUserList - unregister (without election algorithm)
  */
 func UnregisterUserFromYourUserList(userInformation InformationUserDTO) bool {
-	logrus.Info("[api.UnregisterUserFromYourUserList] user: " + userInformation.UserId)
+	logrus.Info("[identity.UnregisterUserFromYourUserList] user: " + userInformation.UserId)
 	return DeleteUser(userInformation)
 }
 
@@ -112,18 +112,18 @@ func UnregisterUserFromYourUserList(userInformation InformationUserDTO) bool {
 SendUnregisterUserFromYourUserList - unregister from all other user services
 */
 func SendUnregisterUserFromYourUserList() bool {
-	logrus.Info("[api.SendUnregisterUserFromYourUserList] sending POST messages")
+	logrus.Info("[identity.SendUnregisterUserFromYourUserList] sending POST messages")
 	payload, err := json.Marshal(YourUserInformation)
 	if err != nil {
-		logrus.Fatalf("[api.SendUnregisterUserFromYourUserList] Error Unmarshal YourUserInformation with error %s", err)
+		logrus.Fatalf("[identity.SendUnregisterUserFromYourUserList] Error Unmarshal YourUserInformation with error %s", err)
 	}
 	for _, user := range Users {
 		_, err = pkg.RequestPOST(user.Endpoint +UnRegisterRoute, string(payload))
 		if err != nil {
-			logrus.Fatalf("[api.SendUnregisterUserFromYourUserList] Error RequestPOST with error %s", err)
+			logrus.Fatalf("[identity.SendUnregisterUserFromYourUserList] Error RequestPOST with error %s", err)
 		}
 	}
-	logrus.Info("[api.SendUnregisterUserFromYourUserList] POST messages send")
+	logrus.Info("[identity.SendUnregisterUserFromYourUserList] POST messages send")
 	return true
 }
 
