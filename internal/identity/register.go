@@ -2,8 +2,9 @@ package identity
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"goBully/pkg"
+
+	"github.com/sirupsen/logrus"
 )
 
 // static routes (api discovery would set these vars in a prod application)
@@ -16,7 +17,7 @@ const SendUnRegisterRoute = "/sendunregister"
 // REGISTER
 /*
 ReceiveServiceRegister - get user credentials from a new user and send them to the other connected users if new user send data directly to you
- */
+*/
 func ReceiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterResponseDTO {
 	logrus.Infof("[identity.ReceiveServiceRegister] register information received from %s", serviceRegisterInfo.DistributingUserId)
 	// check if sending id is also new id (-> do we have to notify other services?)
@@ -46,7 +47,7 @@ func ReceiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 			if (user.UserId != YourUserInformation.UserId) && (user.UserId != newUser.UserId) && (user.UserId != serviceRegisterInfo.DistributingUserId) {
 				// TODO IDEA we could wait if the other api answers and kick him out if he doesn't
 				sendRegistrationTo = sendRegistrationTo + user.UserId + ", "
-				res, err := pkg.RequestPOST(user.Endpoint +RegisterRoute, string(payload))
+				res, err := pkg.RequestPOST(user.Endpoint+RegisterRoute, string(payload))
 				if err != nil {
 					logrus.Fatalf("[identity.ReceiveServiceRegister] Error sending post request with error %s", err)
 				}
@@ -65,14 +66,14 @@ func ReceiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 		}
 	}
 	return RegisterResponseDTO{
-		Message: YourUserInformation.UserId + " here, I have added new id " + newUser.UserId + " to my id pool",
+		Message:     YourUserInformation.UserId + " here, I have added new id " + newUser.UserId + " to my id pool",
 		UserIdInfos: Users,
 	}
 }
 
 /*
 RegisterToService - send a registration message containing id details to an another endpoint
- */
+*/
 func RegisterToService(userEndpoint string) string {
 	endpointToRegisterTo := "http://" + userEndpoint
 	// send YourUserInformation details as a payload to the api to get your identification
@@ -85,7 +86,7 @@ func RegisterToService(userEndpoint string) string {
 		logrus.Fatalf("[identity.RegisterToService] Error marshal newUser with error %s", err)
 	}
 	logrus.Info("[api.RegisterToService] prepare POST to register to endpoint: " + endpointToRegisterTo)
-	res, err := pkg.RequestPOST(endpointToRegisterTo +RegisterRoute, string(payload))
+	res, err := pkg.RequestPOST(endpointToRegisterTo+RegisterRoute, string(payload))
 	if err != nil {
 		logrus.Fatalf("[identity.RegisterToService] Error sending POST request with error %s", err)
 	}
@@ -102,7 +103,7 @@ func RegisterToService(userEndpoint string) string {
 // UNREGISTER
 /*
 UnregisterUserFromYourUserList - unregister (without election algorithm)
- */
+*/
 func UnregisterUserFromYourUserList(userInformation InformationUserDTO) bool {
 	logrus.Info("[identity.UnregisterUserFromYourUserList] user: " + userInformation.UserId)
 	return DeleteUser(userInformation)
@@ -118,7 +119,7 @@ func SendUnregisterUserFromYourUserList() bool {
 		logrus.Fatalf("[identity.SendUnregisterUserFromYourUserList] Error Unmarshal YourUserInformation with error %s", err)
 	}
 	for _, user := range Users {
-		_, err = pkg.RequestPOST(user.Endpoint +UnRegisterRoute, string(payload))
+		_, err = pkg.RequestPOST(user.Endpoint+UnRegisterRoute, string(payload))
 		if err != nil {
 			logrus.Fatalf("[identity.SendUnregisterUserFromYourUserList] Error RequestPOST with error %s", err)
 		}
@@ -138,7 +139,7 @@ type RegisterInfoDTO struct {
 	NewUserId string `json:"new_user_id"`
 	// new userId endpoint
 	// required: true
-	Endpoint  string `json:"endpoint"`
+	Endpoint string `json:"endpoint"`
 }
 
 // response object after register to id api
@@ -146,7 +147,7 @@ type RegisterInfoDTO struct {
 type RegisterResponseDTO struct {
 	// dummy message to print response
 	// required: true
-	Message string                   `json:"message"`
+	Message string `json:"message"`
 	// all registered users
 	// required: true
 	UserIdInfos []InformationUserDTO `json:"user_id_infos"`

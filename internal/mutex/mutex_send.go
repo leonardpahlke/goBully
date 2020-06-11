@@ -2,10 +2,11 @@ package mutex
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
 	"goBully/pkg"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 /*
@@ -40,7 +41,7 @@ func requestCriticalArea() {
 		go sendRequestToUser(user, payloadString)
 	}
 	// 5. wait for all users to reply-ok to your request
-	mutexReceivedAllRequestsMessage := <- mutexReceivedAllRequests
+	mutexReceivedAllRequestsMessage := <-mutexReceivedAllRequests
 	logrus.Infof("[mutex_send.requestCriticalArea] received all requests, you can now enter the critical area - %s", mutexReceivedAllRequestsMessage)
 	// 6. enterCriticalSection()
 	enterCriticalSection()
@@ -64,14 +65,14 @@ func sendRequestToUser(user identity.InformationUserDTO, payloadString string) {
 	waitingRequest := channelUserRequest{
 		userEndpoint:     user.Endpoint,
 		channel:          waitingRequestChannel,
-		user: 		      user,
+		user:             user,
 		sendHealthChecks: true,
 	}
 	mutexWaitingRequests = append(mutexWaitingRequests, waitingRequest)
 	// 2. start listening and asking back for user availability
 	go checkClientIfResponded(waitingRequest)
 	// 3. send POST to user and wait for reply-ok answer
-	res, err := pkg.RequestPOST(user.Endpoint + RouteMutexMessage, payloadString)
+	res, err := pkg.RequestPOST(user.Endpoint+RouteMutexMessage, payloadString)
 	if err != nil {
 		logrus.Fatalf("[mutex_send.sendRequestToUser] Error sending POST with error %s", err)
 	}
@@ -116,7 +117,7 @@ func checkClientIfResponded(waitingForUserResponseObj channelUserRequest) {
 	go clientHealthCheck(waitingForUserResponseObj)
 	for true {
 		// 2. receiving message
-		msg := <- waitingForUserResponseObj.channel
+		msg := <-waitingForUserResponseObj.channel
 		// 3. if message is reply-ok
 		if msg == ReplyOKMessage {
 			// 3.1 abroad health checks, user answered
@@ -193,7 +194,7 @@ func pingUser(userEndpoint string, mutexStateEndpoint string, mutexUserStatus *S
 
 /*
 getWaitingForUserResponseObj - return waitingForUserResponseObj from list mutexWaitingRequests; which might changed
- */
+*/
 func getWaitingForUserResponseObj(waitingForUserResponseObj channelUserRequest) channelUserRequest {
 	for _, waitingRequest := range mutexWaitingRequests {
 		if waitingRequest.userEndpoint == waitingForUserResponseObj.userEndpoint {
@@ -226,7 +227,7 @@ func checkIfAllUsersResponded() {
 
 /*
 checkIfStateObjectIsEmpty - return whether the StateMutexDTO is empty
- */
+*/
 func checkIfStateObjectIsEmpty(mutexUserState StateMutexDTO) bool {
 	var emptyMutexUserState StateMutexDTO
 	return mutexUserState == emptyMutexUserState

@@ -8,12 +8,13 @@ const RouteUserInfo = "/users"
 
 // your identity information
 var YourUserInformation InformationUserDTO
+
 // store all active users (including YourUserInformation)
 var Users []InformationUserDTO
 
 /*
 adds a identity to your identity pool
- */
+*/
 func AddUser(userInformation InformationUserDTO) {
 	if !ContainsUser(Users, userInformation) {
 		Users = append(Users, userInformation)
@@ -35,10 +36,9 @@ func ContainsUser(userList []InformationUserDTO, user InformationUserDTO) bool {
 	return false
 }
 
-
 /*
 deletes a identity from your identity pool
- */
+*/
 func DeleteUser(userInformation InformationUserDTO) bool {
 	for i, user := range Users {
 		if user.UserId == userInformation.UserId {
@@ -58,7 +58,7 @@ func DeleteUser(userInformation InformationUserDTO) bool {
 type InformationUserDTO struct {
 	// user identification which should be unique
 	// required: true
-	UserId   string `json:"userId"`
+	UserId string `json:"userId"`
 	// user endpoint to send http request
 	// required: true
 	Endpoint string `json:"endpoint"`
@@ -69,7 +69,7 @@ type InformationUserDTO struct {
 type InformationUserInfoDTO struct {
 	// all user linked to the api
 	// required: true
-	Users   []InformationUserDTO `json:"users"`
+	Users []InformationUserDTO `json:"users"`
 	// set coordinator
 	Coordinator string `json:"coordinator"`
 }

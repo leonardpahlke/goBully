@@ -1,10 +1,11 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"goBully/internal/election"
 	"goBully/internal/identity"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // swagger:operation POST /election election electionMessage

@@ -2,10 +2,11 @@ package mutex
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
 	"goBully/pkg"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // PUBLIC
@@ -32,13 +33,14 @@ const waitingTime = time.Second * 3
 // PRIVATE
 // local lamport clock
 var clock int32 = 0
+
 // local mutex state
 var state = StateReleased
 
 /*
 ReceiveMutexMessage - receive a mutex message from a user
 respond with request or reply-ok
- */
+*/
 func ReceiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
 	logrus.Infof("[mutex_client.ReceiveMutexMessage] received mutex message from user %s", mutexMessage.User)
 	mutexMessageResponse := receiveMutexMessage(mutexMessage)
@@ -50,7 +52,7 @@ RequestMutexState - return local mutex a state
 */
 func RequestMutexState() StateMutexDTO {
 	logrus.Infof("[mutex_client.RequestMutexState] received mutex state request")
-	return StateMutexDTO {
+	return StateMutexDTO{
 		State: state,
 		Time:  clock,
 	}
@@ -58,7 +60,7 @@ func RequestMutexState() StateMutexDTO {
 
 /*
 RequestCriticalArea - try to enter restricted area (your initiative)
- */
+*/
 func RequestCriticalArea() {
 	requestCriticalArea()
 	// you are now in the critical section until you invoke LeaveCriticalSection()
@@ -66,7 +68,7 @@ func RequestCriticalArea() {
 
 /*
 LeaveCriticalSection - execute this method if you are finished with critical area work
- */
+*/
 func LeaveCriticalSection() {
 	if state == StateHeld {
 		leaveCriticalSection()
@@ -77,7 +79,7 @@ func LeaveCriticalSection() {
 
 /*
 RequestUserState - request user state information
- */
+*/
 func RequestUserState(userEndpoint string, userMutexStateEndpoint string) StateMutexDTO {
 	res, err := pkg.RequestGET(userEndpoint + userMutexStateEndpoint)
 	if err != nil {

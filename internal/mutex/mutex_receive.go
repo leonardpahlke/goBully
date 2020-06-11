@@ -1,8 +1,9 @@
 package mutex
 
 import (
-	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
+
+	"github.com/sirupsen/logrus"
 )
 
 /*
@@ -15,10 +16,14 @@ func receivedRequestMessage(mutexMessage MessageMutexDTO, mutexResponseMessage *
 	logrus.Infof("[mutex_receive.receivedRequestMessage] state: %s", state)
 
 	switch state {
-	case StateReleased: *mutexResponseMessage = getReplyOkMessage()
-	case StateHeld: *mutexResponseMessage = receiveMessageHeld(mutexMessage)
-	case StateWanting: *mutexResponseMessage = receiveMessageWanting(mutexMessage)
-	default: logrus.Fatalf("[mutex_receive.receivedRequestMessage] state: %s, could not be identified", state)
+	case StateReleased:
+		*mutexResponseMessage = getReplyOkMessage()
+	case StateHeld:
+		*mutexResponseMessage = receiveMessageHeld(mutexMessage)
+	case StateWanting:
+		*mutexResponseMessage = receiveMessageWanting(mutexMessage)
+	default:
+		logrus.Fatalf("[mutex_receive.receivedRequestMessage] state: %s, could not be identified", state)
 	}
 
 	logrus.Infof("[mutex_receive.receivedRequestMessage] return response, current state: %s", state)
@@ -66,7 +71,7 @@ func waitingForSendingAnswerBack(mutexMessage MessageMutexDTO) {
 	mutexSendRequests = append(mutexSendRequests, requestChannelInfo)
 	// wait until it is allowed to send a reply-ok
 	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] wait until it is allowed to send a reply-ok to: %s", mutexMessage.User)
-	msg := <- requestChannel
+	msg := <-requestChannel
 	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] received %s from channel", msg)
 	// remove requestChannelInfo form mutexSendRequests
 	mutexSendRequests = removeChannelUserRequest(requestChannelInfo, mutexSendRequests)

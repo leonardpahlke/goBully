@@ -1,9 +1,10 @@
 package api
 
 import (
+	"goBully/internal/mutex"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"goBully/internal/mutex"
 )
 
 // swagger:operation POST /mutex mutex mutexMessage

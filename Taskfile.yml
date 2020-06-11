@@ -1,10 +1,9 @@
-version: '2'
+version: "2"
 
 vars:
   CONTAINER: leonardpahlke/gobully:latest
 
 tasks:
-
   build:
     desc: Build docker container
     cmds:

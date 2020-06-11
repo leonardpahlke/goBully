@@ -24,7 +24,6 @@ receiveMessage POST (Hero <- Hero) - receive message
 func receiveMessage(electionInformation InformationElectionDTO) InformationElectionDTO {
 	// response is set in receiveMessageCoordinator && receiveMessageElection
 	var electionInformationResponse InformationElectionDTO
-
 	switch electionInformation.Payload {
 		case MessageCoordinator: receiveMessageCoordinator(electionInformation, &electionInformationResponse)
 		case MessageElection: receiveMessageElection(electionInformation, &electionInformationResponse)
@@ -167,7 +166,6 @@ func receiveMessageCoordinator(electionInformation InformationElectionDTO, elect
 
 /*
 sendMessagesCoordinator POST (Hero -> Hero)
----
 1. create coordinator message
 2. send all users the coordinator message
 */

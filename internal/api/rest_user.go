@@ -1,10 +1,11 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"goBully/internal/election"
 	id "goBully/internal/identity"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // USER
@@ -67,7 +68,6 @@ func adapterRegisterService(c *gin.Context) {
 	// return all registered users to new identity
 	c.JSON(200, serviceRegisterResponse)
 }
-
 
 // swagger:operation POST /sendregister user triggerRegisterToService
 // User sends register request to another user and kick off election to get the new coordinator
