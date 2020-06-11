@@ -44,7 +44,7 @@ func ReceiveServiceRegister(serviceRegisterInfo RegisterInfoDTO) RegisterRespons
 		for _, user := range Users {
 			// don't send register messages to yourself and the new user
 			if (user.UserId != YourUserInformation.UserId) && (user.UserId != newUser.UserId) && (user.UserId != serviceRegisterInfo.DistributingUserId) {
-				// IDEA we could wait if the other api answers and kick him out if he doesn't TODO do that?
+				// TODO IDEA we could wait if the other api answers and kick him out if he doesn't
 				sendRegistrationTo = sendRegistrationTo + user.UserId + ", "
 				res, err := pkg.RequestPOST(user.Endpoint +RegisterRoute, string(payload))
 				if err != nil {

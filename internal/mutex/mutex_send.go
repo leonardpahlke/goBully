@@ -11,19 +11,19 @@ import (
 /*
 requestCriticalArea - tell all users that this user wants to enter the critical section
 1. set state to 'wanting'
-2. increment clock, you are about to send messages
-3. create a request mutex message
-4. GO - send all users the mutex message
+2. increment clock, you are about to send mutex-messages
+3. create a request mutex-message
+4. GO - send all users the request mutex-message
 5. wait for all users to reply-ok to your request
-6. enterCriticalSection() - and leave critical section if this method returns
+6. enterCriticalSection()
 */
 func requestCriticalArea() {
 	// 1. set state to 'wanting'
 	state = StateWanting
 	logrus.Infof("[mutex_send.requestCriticalArea] starting, state: %s", state)
-	// 2. increment clock, you are about to send messages
+	// 2. increment clock, you are about to send mutex-messages
 	incrementClock(clock)
-	// 3. create a request mutex message
+	// 3. create a request mutex-message
 	var mutexRequestMessage = MessageMutexDTO{
 		Msg:   RequestMessage,
 		Time:  clock,
@@ -35,14 +35,14 @@ func requestCriticalArea() {
 		logrus.Fatalf("[mutex_send.requestCriticalArea] Error marshal mutexMessage with error %s", err)
 	}
 	payloadString := string(payload)
-	// 4. send all users the mutex message
+	// 4. GO - send all users the request mutex-message
 	for _, user := range identity.Users {
 		go sendRequestToUser(user, payloadString)
 	}
-	// 5. wait for all users to 'reply-ok' to your request
+	// 5. wait for all users to reply-ok to your request
 	mutexReceivedAllRequestsMessage := <- mutexReceivedAllRequests
 	logrus.Infof("[mutex_send.requestCriticalArea] received all requests, you can now enter the critical area - %s", mutexReceivedAllRequestsMessage)
-	// 6. enterCriticalSection() - and leave critical section if this method returns
+	// 6. enterCriticalSection()
 	enterCriticalSection()
 	// exec leaveCriticalSection() to leave
 }

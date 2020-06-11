@@ -8,8 +8,6 @@ import (
 	"time"
 )
 
-// TODO enhancement - config file
-
 // PUBLIC
 // API Endpoints
 const RouteMutexMessage = "/mutex"
@@ -63,10 +61,11 @@ RequestCriticalArea - try to enter restricted area (your initiative)
  */
 func RequestCriticalArea() {
 	requestCriticalArea()
+	// you are now in the critical section until you invoke LeaveCriticalSection()
 }
 
 /*
-- TDOO
+LeaveCriticalSection - execute this method if you are finished with critical area work
  */
 func LeaveCriticalSection() {
 	if state == StateHeld {

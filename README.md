@@ -29,8 +29,9 @@ task: Available tasks for this project:
 * swagger:      Generate swagger.yml and start local server
 * update:       Update project dependencies
 ```
+
 **Run commands**
-```go
+```
 // run listed commands 
 task <task>
 // like
@@ -170,8 +171,8 @@ It goes like this with 3 clients (**A**,**B**,**C**):
 ```
 1. set state to 'wanting'
 2. increment clock, you are about to send messages
-3. create a request mutex message
-4. GO - send all users the mutex message
+3. create a request mutex-message  
+4. GO - send all users the request mutex-message
 5. wait for all users to reply-ok to your request
 6. enterCriticalSection() - and leave critical section if this method returns
 ```

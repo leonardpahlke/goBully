@@ -21,14 +21,20 @@ import (
 	- clientHealthCheck()      // send health check to the client after a period of time
 */
 
+// SEND RESPONSES TO
 // all requests that are currently on hold and shall receive a reply-ok answer (string - ENDPOINT)
 var mutexSendRequests []channelUserRequest
-// all requests where you waiting for an answer (string - ENDPOINT)
+
+// WAIT FOR RESPONSES
+// store all user to wait for here
 var mutexWaitingRequests []channelUserRequest
+// store reply-ok user answers here
 var mutexReceivedRequests []channelUserRequest
-// send message through this channel if you received all requests
+
+// notify waiting service, that you received all reply-ok messages
 var mutexReceivedAllRequests = make(chan string)
 
+// channel to notify criticalSection to check state
 var mutexCriticalSection = make(chan string)
 
 /*
@@ -44,11 +50,9 @@ func receiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
 
 	switch mutexMessage.Msg {
 	case RequestMessage: receivedRequestMessage(mutexMessage, &mutexMessageResponse)
-	// TODO case not necessary? - fallback
-	case ReplyOKMessage: receivedReplyMessage(mutexMessage, &mutexMessageResponse)
-	default: logrus.Warningf("[mutex_main.receiveMutexMessage] message: %s, could not be identified", mutexMessage.Msg)
+	default: logrus.Fatalf("[mutex_main.receiveMutexMessage] message: %s, is not could not a request message", mutexMessage.Msg)
 	}
-	// send a reply-ok message - increase clock
+	// respond with a reply-ok message - increase clock
 	incrementClock(mutexMessage.Time)
 	logrus.Infof("[mutex_main.receiveMutexMessage] send response message")
 	return mutexMessageResponse
@@ -57,6 +61,7 @@ func receiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
 /*
 enterCriticalSection - enter critical section
 1. update state to 'held'
+2. wait to get notified to
  */
 func enterCriticalSection() {
 	state = StateHeld
@@ -65,6 +70,8 @@ func enterCriticalSection() {
 		if stateChange == StateReleased {
 			logrus.Infof("[mutex_main.enterCriticalSection] 'released' state received, return")
 			break
+		} else {
+			logrus.Warnf("[mutex_main.enterCriticalSection] state: %s, not 'released' yet", stateChange)
 		}
 	}
 }

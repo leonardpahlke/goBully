@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-// TODO enhancement - config file
-
 // Public function to interact with election
 const Algorithm = "bully"
 
@@ -22,9 +20,6 @@ const StartStaticRouteElection = "/startstaticelection"
 const MessageCoordinator = "CoordinatorUserId"
 const MessageAnswer = "answer"
 const MessageElection = "election"
-
-// TODO - print info logs - maybe also in a config file defined
-// var Verbose = true
 
 // current CoordinatorUserId
 var CoordinatorUserId = ""
