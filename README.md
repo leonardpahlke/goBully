@@ -102,16 +102,17 @@ If a user connects to another (register to network), new user information gets s
 `internal/election/election.go`
 
 	- receiveMessage()            // get a message from a api (election, coordinator)
+	ElectionMessage
 	- receiveMessageElection()    // handle incoming election message
 	- sendMessageElection()       // send a election message to another user
-      ---------------------
+    CoordinatorMessage
 	- receiveMessageCoordinator() // set local coordinator reference with incoming details
 	- sendMessagesCoordinator()   // send coordinator messages to other users
 	
-*more details*
+### Election details
 
+**receiveMessageElection** - election message received
 ```
-receiveMessageElection(InformationElectionDTO)
 1. filter users to send election messages to (UserID > YourID)
 2. if |filtered users| <= 0
    	YES: 2.1 you have the highest ID and win - send coordinatorMessages - exit
@@ -163,11 +164,10 @@ It goes like this with 3 clients (**A**,**B**,**C**):
 	- checkClientIfResponded() // listen if client reply-ok'ed and check with him back if not
 	- clientHealthCheck()      // send health check to the client after a period of time
 
-*more details*
+### Mutex details
 
 **requestCriticalArea** - tell all users that this user wants to enter the critical section
 ```
-
 1. set state to 'wanting'
 2. increment clock, you are about to send messages
 3. create a request mutex message
@@ -175,6 +175,7 @@ It goes like this with 3 clients (**A**,**B**,**C**):
 5. wait for all users to reply-ok to your request
 6. enterCriticalSection() - and leave critical section if this method returns
 ```
+
 
 **sendRequestToUser** - send request message to a user
 ```
@@ -187,6 +188,7 @@ It goes like this with 3 clients (**A**,**B**,**C**):
 7. add waiting request to responded requests
 8. check if all users responded
 ```
+
 
 **checkClientIfResponded** - listen if client reply-ok'ed and check with him back if not
 ```

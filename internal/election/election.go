@@ -10,9 +10,10 @@ import (
 
 /* METHODS overview:
 	- receiveMessage()            // get a message from a api (election, coordinator)
+	ElectionMessage
 	- receiveMessageElection()    // handle incoming election message
 	- sendMessageElection()       // send a election message to another user
-      ---------------------
+    CoordinatorMessage
 	- receiveMessageCoordinator() // set local coordinator reference with incoming details
 	- sendMessagesCoordinator()   // send coordinator messages to other users
  */
@@ -35,7 +36,7 @@ func receiveMessage(electionInformation InformationElectionDTO) InformationElect
 // ELECTION
 
 /*
-election message received
+receiveMessageElection - election message received
 ---
 receiveMessageElection(InformationElectionDTO)
 1. filter users to send election messages to (UserID > YourID)
