@@ -6,11 +6,19 @@ import (
 )
 
 /* METHODS overview:
-	- receiveMutexMessage()       // get a message from a api (election, coordinator)
-	- receivedRequestMessage()    // handle incoming request message
-	- receivedReplyMessage()      // handle incoming reply message
-      ---------------------
-	TODO documentation
+	MUTEX_MAIN
+	- receiveMutexMessage()    // map logic after message
+	- enterCriticalSection()   // enter critical section
+	- leaveCriticalSection()   // leave critical section
+	MUTEX_RECEIVE
+	- receivedRequestMessage() // received a 'request' message
+	- receiveMessageHeld()     // received a request message, your state: held
+	- receiveMessageWanting()  // received a request message, your state: wanting
+	MUTEX_SEND
+	- requestCriticalArea()    // tell all users that this user wants to enter the critical section
+	- sendRequestToUser()      // send request message to a user
+	- checkClientIfResponded() // listen if client reply-ok'ed and check with him back if not
+	- clientHealthCheck()      // send health check to the client after a period of time
 */
 
 // all requests that are currently on hold and shall receive a reply-ok answer (string - ENDPOINT)

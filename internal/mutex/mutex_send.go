@@ -100,15 +100,15 @@ checkClientIfResponded - listen if client reply-ok'ed and check with him back if
 1. GO - clientHealthCheck()
 2. receiving message
 3. if message is not reply-ok
-3.1 abroad health checks, user answered
+	3.1 abroad health checks, user answered
 4. if message is something else
 4.1 ping user
 4.2 wait some time
-4.3 if answer
-4.4 YES: loopback to 2
-4.5.1 NO: delete user
-4.5.2 send reply-ok message to waitingRequestChannel
-4.5.3 stop hearth beat
+4.3 if answered: loopback to 2
+4.4 if not answered:
+	4.4.1 delete user
+	4.4.2 send reply-ok message to waitingRequestChannel
+	4.4.3 stop hearth beat
 */
 func checkClientIfResponded(waitingForUserResponseObj channelUserRequest) {
 	logrus.Infof("[mutex_send.checkClientIfResponded] listen if user answers %s", waitingForUserResponseObj.userEndpoint)
@@ -128,15 +128,18 @@ func checkClientIfResponded(waitingForUserResponseObj channelUserRequest) {
 			pingUser(waitingForUserResponseObj.userEndpoint, RouteMutexState, &mutexUserStatusResponse)
 			// 4.2 wait some time
 			time.Sleep(waitingTime)
-			// 4.3 if answer
-			if !checkIfStateObjectIsEmpty(mutexUserStatusResponse) {
-				// 4.5.1 NO: delete user
+			if checkIfStateObjectIsEmpty(mutexUserStatusResponse) {
+				// 4.3 if answered: loopback to 2
+				logrus.Infof("[mutex_send.checkClientIfResponded] client is alive and in state: %s", mutexUserStatusResponse.State)
+			} else {
+				// 4.4 if not answered
 				logrus.Warnf("[mutex_send.checkClientIfResponded] user: %s, did not respond", waitingForUserResponseObj.userEndpoint)
+				// 4.4.1 delete user
 				identity.DeleteUser(waitingForUserResponseObj.user)
-				// 4.5.2 send reply-ok message to waitingRequestChannel
+				// 4.4.2 send reply-ok message to waitingRequestChannel
 				// break waiting -- and send a artificial reply-ok, remove user because of inactivity
 				waitingForUserResponseObj.channel <- ReplyOKMessage
-				// 4.5.3 stop hearth beat, update waitingForUserResponseObj
+				// 4.4.3 stop hearth beat
 				removeChannelUserRequest(waitingForUserResponseObj, mutexWaitingRequests)
 				waitingForUserResponseObj = channelUserRequest{
 					userEndpoint:     waitingForUserResponseObj.userEndpoint,
@@ -146,8 +149,6 @@ func checkClientIfResponded(waitingForUserResponseObj channelUserRequest) {
 				}
 				mutexWaitingRequests = append(mutexWaitingRequests, waitingForUserResponseObj)
 				break
-			} else {
-				logrus.Infof("[mutex_send.checkClientIfResponded] client is alive and in state: %s", mutexUserStatusResponse.State)
 			}
 		}
 	}

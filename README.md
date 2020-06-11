@@ -147,16 +147,59 @@ It goes like this with 3 clients (**A**,**B**,**C**):
 - **A** has finished his critical section and sends _reply-ok_ to the stored request of **C**
 - **C** got all required _reply-ok_ and may now enter the critical section
 
-`internal/mutex/mutex.go`
+`internal/mutex/**`
 
-	- receiveMutexMessage()       // get a message from a api (election, coordinator)
-	- receivedRequestMessage()    // handle incoming request message
-	- receivedReplyMessage()      // handle incoming reply message
-      ---------------------
-	TODO
+	mutex_main.go
+	- receiveMutexMessage()    // map logic after message
+	- enterCriticalSection()   // enter critical section
+	- leaveCriticalSection()   // leave critical section
+	mutex_receive.go
+	- receivedRequestMessage() // received a 'request' message
+	- receiveMessageHeld()     // received a request message, your state: held
+	- receiveMessageWanting()  // received a request message, your state: wanting
+	mutex_send.go
+	- requestCriticalArea()    // tell all users that this user wants to enter the critical section
+	- sendRequestToUser()      // send request message to a user
+	- checkClientIfResponded() // listen if client reply-ok'ed and check with him back if not
+	- clientHealthCheck()      // send health check to the client after a period of time
 
 *more details*
 
+**requestCriticalArea** - tell all users that this user wants to enter the critical section
 ```
-TODO
+
+1. set state to 'wanting'
+2. increment clock, you are about to send messages
+3. create a request mutex message
+4. GO - send all users the mutex message
+5. wait for all users to reply-ok to your request
+6. enterCriticalSection() - and leave critical section if this method returns
+```
+
+**sendRequestToUser** - send request message to a user
+```
+1. create channel and add it to mutexWaitingRequests
+2. GO - checkClientIfResponded() start listening and asking back for user availability
+3. send POST to user and wait for reply-ok answer
+4. receive answer message
+5. check if answer message is reply-ok message
+6. send message through channel that user responded -> no need to listen anymore
+7. add waiting request to responded requests
+8. check if all users responded
+```
+
+**checkClientIfResponded** - listen if client reply-ok'ed and check with him back if not
+```
+1. GO - clientHealthCheck()
+2. receiving message
+3. if message is not reply-ok
+	3.1 abroad health checks, user answered
+4. if message is something else
+4.1 ping user
+4.2 wait some time
+4.3 if answered: loopback to 2
+4.4 if not answered:
+	4.4.1 delete user
+	4.4.2 send reply-ok message to waitingRequestChannel
+	4.4.3 stop hearth beat
 ```

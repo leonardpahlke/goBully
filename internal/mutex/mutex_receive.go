@@ -25,7 +25,7 @@ func receivedRequestMessage(mutexMessage MessageMutexDTO, mutexResponseMessage *
 }
 
 /*
-receiveMessageHeld - received a request message, state: held
+receiveMessageHeld - received a request message, your state: held
 store request and send reply-ok as soon as leaving critical section
 */
 func receiveMessageHeld(mutexMessage MessageMutexDTO) MessageMutexDTO {
@@ -34,7 +34,7 @@ func receiveMessageHeld(mutexMessage MessageMutexDTO) MessageMutexDTO {
 }
 
 /*
-receiveMessageWanting - received a request message, state: wanting
+receiveMessageWanting - received a request message, your state: wanting
 compare clocks and store request if yours is lower (if you are not the one waiting)
 */
 func receiveMessageWanting(mutexMessage MessageMutexDTO) MessageMutexDTO {
@@ -51,26 +51,8 @@ func receiveMessageWanting(mutexMessage MessageMutexDTO) MessageMutexDTO {
 	return getReplyOkMessage()
 }
 
-/*
-waitingForSendingAnswerBack - add request to list of requests to answer back to
- */
-func waitingForSendingAnswerBack(mutexMessage MessageMutexDTO) {
-	requestChannel := make(chan string)
-	requestChannelInfo := channelUserRequest{
-		userEndpoint: mutexMessage.User,
-		channel:      requestChannel,
-	}
-	mutexSendRequests = append(mutexSendRequests, requestChannelInfo)
-	// wait until it is allowed to send a reply-ok
-	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] wait until it is allowed to send a reply-ok to: %s", mutexMessage.User)
-	msg := <- requestChannel
-	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] received %s from channel", msg)
-	// remove requestChannelInfo form mutexSendRequests
-	mutexSendRequests = removeChannelUserRequest(requestChannelInfo, mutexSendRequests)
-}
-
 // --------------------
-// RECEIVE REPLY-OK TODO method not necessary
+// RECEIVE REPLY-OK TODO METHOD NOT NEEDED
 /*
 receivedReplyMessage - received a 'reply-ok' message
 1. notify channel in list
@@ -92,6 +74,24 @@ func receivedReplyMessage(mutexMessage MessageMutexDTO, mutexResponseMessage *Me
 
 // --------------------
 // HELPER METHODS
+
+/*
+waitingForSendingAnswerBack - add request to list of requests to answer back to
+*/
+func waitingForSendingAnswerBack(mutexMessage MessageMutexDTO) {
+	requestChannel := make(chan string)
+	requestChannelInfo := channelUserRequest{
+		userEndpoint: mutexMessage.User,
+		channel:      requestChannel,
+	}
+	mutexSendRequests = append(mutexSendRequests, requestChannelInfo)
+	// wait until it is allowed to send a reply-ok
+	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] wait until it is allowed to send a reply-ok to: %s", mutexMessage.User)
+	msg := <- requestChannel
+	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] received %s from channel", msg)
+	// remove requestChannelInfo form mutexSendRequests
+	mutexSendRequests = removeChannelUserRequest(requestChannelInfo, mutexSendRequests)
+}
 
 /*
 getReplyOkMessage - return reply-ok message
