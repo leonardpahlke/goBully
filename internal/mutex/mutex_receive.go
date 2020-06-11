@@ -12,16 +12,16 @@ receivedRequestMessage - received a 'request' message
 - waiting (stage wanting) -> compare clocks and store request if yours is lower (if you are not the one waiting)
 */
 func receivedRequestMessage(mutexMessage MessageMutexDTO, mutexResponseMessage *MessageMutexDTO) {
-	logrus.Infof("[mutex.receivedRequestMessage] state: %s", state)
+	logrus.Infof("[mutex_receive.receivedRequestMessage] state: %s", state)
 
 	switch state {
 	case StateReleased: *mutexResponseMessage = getReplyOkMessage()
 	case StateHeld: *mutexResponseMessage = receiveMessageHeld(mutexMessage)
 	case StateWanting: *mutexResponseMessage = receiveMessageWanting(mutexMessage)
-	default: logrus.Fatalf("[mutex.receivedRequestMessage] state: %s, could not be identified", state)
+	default: logrus.Fatalf("[mutex_receive.receivedRequestMessage] state: %s, could not be identified", state)
 	}
 
-	logrus.Infof("[mutex.receivedRequestMessage] return response, current state: %s", state)
+	logrus.Infof("[mutex_receive.receivedRequestMessage] return response, current state: %s", state)
 }
 
 /*
@@ -42,7 +42,7 @@ func receiveMessageWanting(mutexMessage MessageMutexDTO) MessageMutexDTO {
 	if mutexMessage.User != identity.YourUserInformation.Endpoint {
 		// higher clock goes first
 		if mutexMessage.Time < clock {
-			logrus.Infof("[mutex.receiveMessageWanting] my clock is > mutexMessage.Time")
+			logrus.Infof("[mutex_receive.receiveMessageWanting] my clock is > mutexMessage.Time")
 			waitingForSendingAnswerBack(mutexMessage)
 		}
 		// else return reply-ok
@@ -62,9 +62,9 @@ func waitingForSendingAnswerBack(mutexMessage MessageMutexDTO) {
 	}
 	mutexSendRequests = append(mutexSendRequests, requestChannelInfo)
 	// wait until it is allowed to send a reply-ok
-	logrus.Infof("[mutex.waitingForSendingAnswerBack] wait until it is allowed to send a reply-ok to: %s", mutexMessage.User)
+	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] wait until it is allowed to send a reply-ok to: %s", mutexMessage.User)
 	msg := <- requestChannel
-	logrus.Infof("[mutex.waitingForSendingAnswerBack] received %s from channel", msg)
+	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] received %s from channel", msg)
 	// remove requestChannelInfo form mutexSendRequests
 	mutexSendRequests = removeChannelUserRequest(requestChannelInfo, mutexSendRequests)
 }
@@ -79,15 +79,30 @@ receivedReplyMessage - received a 'reply-ok' message
 TODO method not necessary
 */
 func receivedReplyMessage(mutexMessage MessageMutexDTO, mutexResponseMessage *MessageMutexDTO) {
-	logrus.Infof("[mutex.receivedReplyMessage] user: %s", mutexMessage.User)
+	logrus.Infof("[mutex_receive.receivedReplyMessage] user: %s", mutexMessage.User)
 	for _, userCallback := range mutexWaitingRequests {
 		if userCallback.userEndpoint == mutexMessage.User {
 			userCallback.channel <- mutexMessage.Reply // TODO maybe send something else?
-			logrus.Infof("[mutex.receivedReplyMessage] send message through user channel: %s", mutexMessage.User)
+			logrus.Infof("[mutex_receive.receivedReplyMessage] send message through user channel: %s", mutexMessage.User)
 			mutexReceivedRequests = append(mutexReceivedRequests, userCallback)
 			checkIfAllUsersResponded()
 			break
 		}
 	}
 	// ...
+}
+
+// --------------------
+// HELPER METHODS
+
+/*
+getReplyOkMessage - return reply-ok message
+*/
+func getReplyOkMessage() MessageMutexDTO {
+	return MessageMutexDTO{
+		Msg:   ReplyOKMessage,
+		Time:  clock,
+		Reply: mutexYourReply,
+		User:  mutexYourUser,
+	}
 }

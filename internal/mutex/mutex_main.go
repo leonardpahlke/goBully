@@ -2,6 +2,7 @@ package mutex
 
 import (
 	"github.com/sirupsen/logrus"
+	"goBully/internal/identity"
 )
 
 /* METHODS overview:
@@ -26,7 +27,7 @@ var mutexCriticalSection = make(chan string)
 receiveMutexMessage - map logic after message
  */
 func receiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
-	logrus.Infof("[mutex.receiveMutexMessage] received message")
+	logrus.Infof("[mutex_main.receiveMutexMessage] received message")
 	// received a request message
 	incrementClock(mutexMessage.Time)
 
@@ -37,11 +38,11 @@ func receiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
 	case RequestMessage: receivedRequestMessage(mutexMessage, &mutexMessageResponse)
 	// TODO case not necessary? - fallback
 	case ReplyOKMessage: receivedReplyMessage(mutexMessage, &mutexMessageResponse)
-	default: logrus.Warningf("[mutex.receiveMutexMessage] message: %s, could not be identified", mutexMessage.Msg)
+	default: logrus.Warningf("[mutex_main.receiveMutexMessage] message: %s, could not be identified", mutexMessage.Msg)
 	}
 	// send a reply-ok message - increase clock
 	incrementClock(mutexMessage.Time)
-	logrus.Infof("[mutex.receiveMutexMessage] send response message")
+	logrus.Infof("[mutex_main.receiveMutexMessage] send response message")
 	return mutexMessageResponse
 }
 
@@ -54,7 +55,7 @@ func enterCriticalSection() {
 	for true {
 		stateChange := <- mutexCriticalSection
 		if stateChange == StateReleased {
-			logrus.Infof("[mutex.enterCriticalSection] 'released' state received, return")
+			logrus.Infof("[mutex_main.enterCriticalSection] 'released' state received, return")
 			break
 		}
 	}
@@ -68,7 +69,7 @@ leaveCriticalSection - enter critical section
 func leaveCriticalSection() {
 	// 1. update state to 'released'
 	state = StateReleased
-	logrus.Infof("[mutex.leaveCriticalSection] leave, state: %s", state)
+	logrus.Infof("[mutex_main.leaveCriticalSection] leave, state: %s", state)
 	mutexCriticalSection <- state
 	// 2. notify critical section user is no longer in it
 	for _, mutexSendRequest := range mutexSendRequests {
@@ -80,36 +81,6 @@ func leaveCriticalSection() {
 // HELPER METHODS
 
 /*
-checkIfAllUsersResponded - check if all users responded with reply-ok after requesting critical section
-1. clean types mutexReceivedRequests, mutexWaitingRequests
-2. notify channel mutexReceivedAllRequests
-TODO
-*/
-func checkIfAllUsersResponded() {
-	if len(mutexWaitingRequests) == len(mutexReceivedRequests) {
-		// 1. clean types mutexReceivedRequests, mutexWaitingRequests
-		mutexReceivedRequests = []channelUserRequest{}
-		mutexWaitingRequests = []channelUserRequest{}
-		logrus.Infof("[mutex.checkIfAllUsersResponded] all users answered, send notification to waiting task")
-		// 2. notify channel mutexReceivedAllRequests
-		mutexReceivedAllRequests <- "good to go" // TODO maybe replace this with a more interesting message
-	}
-	// TODO check if this is ok
-}
-
-/*
-getReplyOkMessage - return reply-ok message
-*/
-func getReplyOkMessage() MessageMutexDTO {
-	return MessageMutexDTO{
-		Msg:   ReplyOKMessage,
-		Time:  clock,
-		Reply: mutexYourReply,
-		User:  mutexYourUser,
-	}
-}
-
-/*
 removeChannelUserRequest - TODO description
  */
 func removeChannelUserRequest(channelReq channelUserRequest, channelReqs []channelUserRequest) []channelUserRequest {
@@ -118,11 +89,11 @@ func removeChannelUserRequest(channelReq channelUserRequest, channelReqs []chann
 			// delete identity from the list
 			channelReqs[i] = channelReqs[len(channelReqs)-1]
 			channelReqs = channelReqs[:len(channelReqs)-1]
-			logrus.Infof("[mutex.removeChannelUserRequest] channel req deleted %s", channelReq.userEndpoint)
+			logrus.Infof("[mutex_main.removeChannelUserRequest] channel req deleted %s", channelReq.userEndpoint)
 			return channelReqs
 		}
 	}
-	logrus.Warningf("[mutex.removeChannelUserRequest] channel req could not be found %s", channelReq.userEndpoint)
+	logrus.Warningf("[mutex_main.removeChannelUserRequest] channel req could not be found %s", channelReq.userEndpoint)
 	return channelReqs
 }
 
@@ -131,7 +102,7 @@ incrementClock - increase local lamport lock
  */
 func incrementClock(i int32) int32 {
 	clock = max(clock, i)
-	logrus.Infof("[mutex.incrementClock] increasing local clock to %s", clock)
+	logrus.Infof("[mutex_main.incrementClock] increasing local clock to %s", clock)
 	return clock
 }
 
@@ -152,6 +123,7 @@ func max(i int32, j int32) int32 {
 // message to channel to identify users
 type channelUserRequest struct {
 	userEndpoint string
+	user identity.InformationUserDTO
 	channel chan string
 	sendHealthChecks bool
 }

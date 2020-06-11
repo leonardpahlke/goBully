@@ -42,7 +42,7 @@ ReceiveMutexMessage - receive a mutex message from a user
 respond with request or reply-ok
  */
 func ReceiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
-	logrus.Infof("[mutex.ReceiveMutexMessage] received mutex message from user %s", mutexMessage.User)
+	logrus.Infof("[mutex_client.ReceiveMutexMessage] received mutex message from user %s", mutexMessage.User)
 	mutexMessageResponse := receiveMutexMessage(mutexMessage)
 	return mutexMessageResponse
 }
@@ -51,7 +51,7 @@ func ReceiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
 RequestMutexState - return local mutex a state
 */
 func RequestMutexState() StateMutexDTO {
-	logrus.Infof("[mutex.RequestMutexState] received mutex state request")
+	logrus.Infof("[mutex_client.RequestMutexState] received mutex state request")
 	return StateMutexDTO {
 		State: state,
 		Time:  clock,
@@ -73,7 +73,7 @@ func LeaveCriticalSection() {
 	if state == StateHeld {
 		leaveCriticalSection()
 	} else {
-		logrus.Infof("[mutex.LeaveCriticalSection] requesting to leave critical section but you are currently in state: %s", state)
+		logrus.Infof("[mutex_client.LeaveCriticalSection] requesting to leave critical section but you are currently in state: %s", state)
 	}
 }
 
@@ -83,12 +83,12 @@ RequestUserState - request user state information
 func RequestUserState(userEndpoint string, userMutexStateEndpoint string) StateMutexDTO {
 	res, err := pkg.RequestGET(userEndpoint + userMutexStateEndpoint)
 	if err != nil {
-		logrus.Fatalf("[mutex.RequestUserState] Error request with error %s", err)
+		logrus.Fatalf("[mutex_client.RequestUserState] Error request with error %s", err)
 	}
 	var stateMutexDTO StateMutexDTO
 	err = json.Unmarshal(res, &stateMutexDTO)
 	if err != nil {
-		logrus.Fatalf("[mutex.RequestUserState] Error Unmarshal stateMutexDTO with error %s", err)
+		logrus.Fatalf("[mutex_client.RequestUserState] Error Unmarshal stateMutexDTO with error %s", err)
 	}
 	return stateMutexDTO
 }
