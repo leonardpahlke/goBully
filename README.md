@@ -90,6 +90,13 @@ may change
 
 ## Bully Algorithm implementation
 
+Scenario info:
+- user1 -> null
+- user2 -> user1
+- user3 -> user1
+
+If a user connects to another (register to network), new user information gets send to all network participants
+
 ![goBully](assets/goBully.jpg)
 
 `internal/election/election.go`

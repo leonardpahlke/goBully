@@ -76,20 +76,18 @@ receivedReplyMessage - received a 'reply-ok' message
 1. notify channel in list
 - go all required reply-ok messages -> you may enter the critical area
 - else wait
-TODO method not necessary
 */
 func receivedReplyMessage(mutexMessage MessageMutexDTO, mutexResponseMessage *MessageMutexDTO) {
 	logrus.Infof("[mutex_receive.receivedReplyMessage] user: %s", mutexMessage.User)
 	for _, userCallback := range mutexWaitingRequests {
 		if userCallback.userEndpoint == mutexMessage.User {
-			userCallback.channel <- mutexMessage.Reply // TODO maybe send something else?
+			userCallback.channel <- mutexMessage.Reply
 			logrus.Infof("[mutex_receive.receivedReplyMessage] send message through user channel: %s", mutexMessage.User)
 			mutexReceivedRequests = append(mutexReceivedRequests, userCallback)
 			checkIfAllUsersResponded()
 			break
 		}
 	}
-	// ...
 }
 
 // --------------------

@@ -59,10 +59,9 @@ func RequestMutexState() StateMutexDTO {
 }
 
 /*
-ApplyEnterRestrictedArea - try to enter restricted area (your initiative)
-TODO
+RequestCriticalArea - try to enter restricted area (your initiative)
  */
-func ApplyEnterRestrictedArea() {
+func RequestCriticalArea() {
 	requestCriticalArea()
 }
 

@@ -10,7 +10,7 @@ import (
 	- receivedRequestMessage()    // handle incoming request message
 	- receivedReplyMessage()      // handle incoming reply message
       ---------------------
-	TODO
+	TODO documentation
 */
 
 // all requests that are currently on hold and shall receive a reply-ok answer (string - ENDPOINT)
@@ -81,7 +81,7 @@ func leaveCriticalSection() {
 // HELPER METHODS
 
 /*
-removeChannelUserRequest - TODO description
+removeChannelUserRequest - remove a channelUserRequest from a list (mutexSendRequests, mutexWaitingRequests, mutexReceivedRequests)
  */
 func removeChannelUserRequest(channelReq channelUserRequest, channelReqs []channelUserRequest) []channelUserRequest {
 	for i, req := range channelReqs {

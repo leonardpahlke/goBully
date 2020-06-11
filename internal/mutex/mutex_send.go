@@ -224,7 +224,7 @@ func checkIfAllUsersResponded() {
 }
 
 /*
-- TODO description
+checkIfStateObjectIsEmpty - return whether the StateMutexDTO is empty
  */
 func checkIfStateObjectIsEmpty(mutexUserState StateMutexDTO) bool {
 	var emptyMutexUserState StateMutexDTO
