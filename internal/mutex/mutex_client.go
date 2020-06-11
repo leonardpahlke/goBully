@@ -1,8 +1,10 @@
 package mutex
 
 import (
+	"encoding/json"
 	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
+	"goBully/pkg"
 )
 
 // TODO enhancement - config file
@@ -53,10 +55,27 @@ func RequestMutexState() StateMutexDTO {
 }
 
 /*
-try to enter restricted area (your initiative)
+ApplyEnterRestrictedArea - try to enter restricted area (your initiative)
+TODO
  */
 func ApplyEnterRestrictedArea() {
-	// TODO
+	requestCriticalArea()
+}
+
+/*
+RequestUserState - request user state information
+ */
+func RequestUserState(userEndpoint string, userMutexStateEndpoint string) StateMutexDTO {
+	res, err := pkg.RequestGET(userEndpoint + userMutexStateEndpoint)
+	if err != nil {
+		logrus.Fatalf("[mutex.RequestUserState] Error request with error %s", err)
+	}
+	var stateMutexDTO StateMutexDTO
+	err = json.Unmarshal(res, &stateMutexDTO)
+	if err != nil {
+		logrus.Fatalf("[mutex.RequestUserState] Error Unmarshal stateMutexDTO with error %s", err)
+	}
+	return stateMutexDTO
 }
 
 // mutex message
