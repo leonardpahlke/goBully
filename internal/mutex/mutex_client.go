@@ -5,6 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
 	"goBully/pkg"
+	"time"
 )
 
 // TODO enhancement - config file
@@ -26,6 +27,9 @@ const ReplyOKMessage = "reply-ok"
 // static mutex val's
 var mutexYourReply = identity.YourUserInformation.Endpoint
 var mutexYourUser = RouteMutexMessage
+
+// waiting time to send health checks
+const waitingTime = time.Second * 3
 
 // PRIVATE
 // local lamport clock
@@ -60,6 +64,17 @@ TODO
  */
 func ApplyEnterRestrictedArea() {
 	requestCriticalArea()
+}
+
+/*
+- TDOO
+ */
+func LeaveCriticalSection() {
+	if state == StateHeld {
+		leaveCriticalSection()
+	} else {
+		logrus.Infof("[mutex.LeaveCriticalSection] requesting to leave critical section but you are currently in state: %s", state)
+	}
 }
 
 /*
