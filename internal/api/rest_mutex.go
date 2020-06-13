@@ -24,20 +24,18 @@ import (
 // responses:
 //  '200':
 //    description: successful operation
-//    schema:
-//      $ref: "#/definitions/MessageMutexDTO"
 //  '404':
 //    description: error in operation
 //  '403':
 //    description: operation not available
 func adapterMutexMessage(c *gin.Context) {
-	var mutexMessage mutex.MessageMutexDTO
+	var mutexMessage mutex.MessageMutexEntity
 	err := c.BindJSON(&mutexMessage)
 	if err != nil {
 		logrus.Fatalf("[api.adapterMutexMessage] Error marshal mutexMessage with error %s", err)
 	}
-	mutexResponse := mutex.ReceiveMutexMessage(mutexMessage)
-	c.JSON(200, mutexResponse)
+	mutex.ReceiveMutexMessage(mutexMessage)
+	c.String(200, "successful operation")
 }
 
 // swagger:operation GET /mutexstate mutex mutexStateRequest

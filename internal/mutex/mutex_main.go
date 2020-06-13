@@ -1,40 +1,14 @@
 package mutex
 
 import (
-	"goBully/internal/identity"
-
 	"github.com/sirupsen/logrus"
 )
 
-/* METHODS overview:
-MUTEX_MAIN
-- receiveMutexMessage()    // map logic after message
-- enterCriticalSection()   // enter critical section
-- leaveCriticalSection()   // leave critical section
-MUTEX_RECEIVE
-- receivedRequestMessage() // received a 'request' message
-- receiveMessageHeld()     // received a request message, your state: held
-- receiveMessageWanting()  // received a request message, your state: wanting
-MUTEX_SEND
-- requestCriticalArea()    // tell all users that this user wants to enter the critical section
-- sendRequestToUser()      // send request message to a user
-- checkClientIfResponded() // listen if client reply-ok'ed and check with him back if not
-- clientHealthCheck()      // send health check to the client after a period of time
-*/
+// store all users where I still neeed to respond with reply-ok to
+var replyOkSendingList = []userSendingChannel{}
 
-// SEND RESPONSES TO
-// all requests that are currently on hold and shall receive a reply-ok answer (string - ENDPOINT)
-var mutexSendRequests []channelUserRequest
-
-// WAIT FOR RESPONSES
-// store all user to wait for here
-var mutexWaitingRequests []channelUserRequest
-
-// store reply-ok user answers here
-var mutexReceivedRequests []channelUserRequest
-
-// notify waiting service, that you received all reply-ok messages
-var mutexReceivedAllRequests = make(chan string)
+// list of
+var replyOkwaitingList = []responseChannel{}
 
 // channel to notify criticalSection to check state
 var mutexCriticalSection = make(chan string)
@@ -42,24 +16,19 @@ var mutexCriticalSection = make(chan string)
 /*
 receiveMutexMessage - map logic after message
 */
-func receiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
+func receiveMutexMessage(mutexMessage MessageMutexEntity) {
 	logrus.Infof("[mutex_main.receiveMutexMessage] received message")
-	// received a request message
-	incrementClock(mutexMessage.Time)
-
-	// response is set in receivedRequestMessage && receivedReplyMessage
-	var mutexMessageResponse MessageMutexDTO
 
 	switch mutexMessage.Msg {
 	case RequestMessage:
-		receivedRequestMessage(mutexMessage, &mutexMessageResponse)
+		receivedRequestMessage(mutexMessage)
+	case ReplyOKMessage:
+		receivedReplyOkMessage(mutexMessage)
 	default:
 		logrus.Fatalf("[mutex_main.receiveMutexMessage] message: %s, is not could not a request message", mutexMessage.Msg)
 	}
-	// respond with a reply-ok message - increase clock
+	// completed processing request message
 	incrementClock(mutexMessage.Time)
-	logrus.Infof("[mutex_main.receiveMutexMessage] send response message")
-	return mutexMessageResponse
 }
 
 /*
@@ -91,8 +60,8 @@ func leaveCriticalSection() {
 	logrus.Infof("[mutex_main.leaveCriticalSection] leave, state: %s", state)
 	mutexCriticalSection <- state
 	// 2. notify critical section user is no longer in it
-	for _, mutexSendRequest := range mutexSendRequests {
-		mutexSendRequest.channel <- "leaveCriticalSection"
+	for _, replyokSendInvokeChannel := range replyOkSendingList {
+		replyokSendInvokeChannel.channel <- ReplyOKMessage
 	}
 }
 
@@ -102,18 +71,17 @@ func leaveCriticalSection() {
 /*
 removeChannelUserRequest - remove a channelUserRequest from a list (mutexSendRequests, mutexWaitingRequests, mutexReceivedRequests)
 */
-func removeChannelUserRequest(channelReq channelUserRequest, channelReqs []channelUserRequest) []channelUserRequest {
-	for i, req := range channelReqs {
-		if req.userEndpoint == channelReq.userEndpoint {
+func rmReplyOkSendingUser(userSendingChan userSendingChannel) {
+	for i, userChan := range replyOkSendingList {
+		if userChan.userEndpoint == userSendingChan.userEndpoint {
 			// delete identity from the list
-			channelReqs[i] = channelReqs[len(channelReqs)-1]
-			channelReqs = channelReqs[:len(channelReqs)-1]
-			logrus.Infof("[mutex_main.removeChannelUserRequest] channel req deleted %s", channelReq.userEndpoint)
-			return channelReqs
+			replyOkSendingList[i] = replyOkSendingList[len(replyOkSendingList)-1]
+			replyOkSendingList = replyOkSendingList[:len(replyOkSendingList)-1]
+			logrus.Infof("[mutex_main.removeChannelUserRequest] user rm from reply-ok waiting list %s", userChan.userEndpoint)
+			return
 		}
 	}
-	logrus.Warningf("[mutex_main.removeChannelUserRequest] channel req could not be found %s", channelReq.userEndpoint)
-	return channelReqs
+	logrus.Warnf("[mutex_main.removeChannelUserRequest]  user could not be found deleted")
 }
 
 /*
@@ -131,18 +99,6 @@ max - simple max function with int32 types
 func max(i int32, j int32) int32 {
 	if i > j {
 		return i
-	} else {
-		return j
 	}
-}
-
-// --------------------
-// PRIVATE TYPES
-
-// message to channel to identify users
-type channelUserRequest struct {
-	userEndpoint     string
-	user             identity.InformationUserDTO
-	channel          chan string
-	sendHealthChecks bool
+	return j
 }

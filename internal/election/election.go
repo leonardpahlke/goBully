@@ -2,10 +2,11 @@ package election
 
 import (
 	"encoding/json"
-	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
 	"goBully/pkg"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 /* METHODS overview:
@@ -16,18 +17,21 @@ import (
     CoordinatorMessage
 	- receiveMessageCoordinator() // set local coordinator reference with incoming details
 	- sendMessagesCoordinator()   // send coordinator messages to other users
- */
+*/
 
 /*
 receiveMessage POST (Hero <- Hero) - receive message
- */
-func receiveMessage(electionInformation InformationElectionDTO) InformationElectionDTO {
+*/
+func receiveMessage(electionInformation InformationElectionEntity) InformationElectionEntity {
 	// response is set in receiveMessageCoordinator && receiveMessageElection
-	var electionInformationResponse InformationElectionDTO
+	var electionInformationResponse InformationElectionEntity
 	switch electionInformation.Payload {
-		case MessageCoordinator: receiveMessageCoordinator(electionInformation, &electionInformationResponse)
-		case MessageElection: receiveMessageElection(electionInformation, &electionInformationResponse)
-		default: logrus.Warningf("[election.receiveMessage] message: %s, could not be identified - abroad ", electionInformation.Algorithm)
+	case MessageCoordinator:
+		receiveMessageCoordinator(electionInformation, &electionInformationResponse)
+	case MessageElection:
+		receiveMessageElection(electionInformation, &electionInformationResponse)
+	default:
+		logrus.Warningf("[election.receiveMessage] message: %s, could not be identified - abroad ", electionInformation.Algorithm)
 	}
 	return electionInformationResponse
 }
@@ -54,7 +58,7 @@ receiveMessageElection(InformationElectionDTO)
          2.9 clear callback list
 3. send response back (answer)
 */
-func receiveMessageElection(electionInformation InformationElectionDTO, electionInformationResponse *InformationElectionDTO) {
+func receiveMessageElection(electionInformation InformationElectionEntity, electionInformationResponse *InformationElectionEntity) {
 	logrus.Infof("[election.receiveMessageElection] election message received")
 	// 1. filter users to send election messages to (UserID > YourID)
 	var selectedUsers []identity.InformationUserDTO
@@ -70,7 +74,7 @@ func receiveMessageElection(electionInformation InformationElectionDTO, election
 		sendMessagesCoordinator(electionInformation)
 	} else {
 		// 2.2 transform message and create POST payload
-		myElectionInformation := InformationElectionDTO{
+		myElectionInformation := InformationElectionEntity{
 			Algorithm: electionInformation.Algorithm,
 			Payload:   MessageElection,
 			User:      identity.YourUserInformation.UserId,
@@ -111,7 +115,7 @@ func receiveMessageElection(electionInformation InformationElectionDTO, election
 		callbacks = []identity.InformationUserDTO{}
 	}
 	// 3. send response back (answer)
-	*electionInformationResponse = InformationElectionDTO{
+	*electionInformationResponse = InformationElectionEntity{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   MessageAnswer,
 		User:      identity.YourUserInformation.UserId,
@@ -125,16 +129,16 @@ sendMessageElection POST (Hero -> Hero)
 ALGORITHM - OVERVIEW
 2.4.1 send POST request to client
 2.4.2 if response is OK add client to client who have responded responded
- */
+*/
 func sendMessageElection(didCallback *[]identity.InformationUserDTO, userInfoCallback *identity.InformationUserDTO, msgPayload []byte) {
 	// 2.4.1 send POST request to client
 	logrus.Info("[election.sendMessageElection] send election message to identity: " + userInfoCallback.UserId)
-	res, err := pkg.RequestPOST(userInfoCallback.Endpoint + RouteElection, string(msgPayload))
+	res, err := pkg.RequestPOST(userInfoCallback.Endpoint+RouteElection, string(msgPayload))
 	if err != nil {
 		logrus.Fatalf("[election.sendMessageElection] Error send post request with error %s", err)
 	}
 	// 2.4.2 if response is OK add client to client who have responded responded
-	var electionAnswerResponse InformationElectionDTO
+	var electionAnswerResponse InformationElectionEntity
 	err = json.Unmarshal(res, &electionAnswerResponse)
 	if err != nil {
 		logrus.Fatalf("[election.sendMessageElection] Error Unmarshal electionAnswerResponse with error %s", err)
@@ -150,12 +154,12 @@ func sendMessageElection(didCallback *[]identity.InformationUserDTO, userInfoCal
 
 /*
 CoordinatorUserId message received - new CoordinatorUserId found
- */
-func receiveMessageCoordinator(electionInformation InformationElectionDTO, electionInformationResponse *InformationElectionDTO) {
+*/
+func receiveMessageCoordinator(electionInformation InformationElectionEntity, electionInformationResponse *InformationElectionEntity) {
 	// set CoordinatorUserId to local coordinator information
 	logrus.Infof("[election.receiveMessageCoordinator] new CoordinatorUserId set")
 	CoordinatorUserId = electionInformation.User
-	*electionInformationResponse = InformationElectionDTO{
+	*electionInformationResponse = InformationElectionEntity{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   MessageAnswer,
 		User:      identity.YourUserInformation.UserId,
@@ -169,9 +173,9 @@ sendMessagesCoordinator POST (Hero -> Hero)
 1. create coordinator message
 2. send all users the coordinator message
 */
-func sendMessagesCoordinator(electionInformation InformationElectionDTO) {
+func sendMessagesCoordinator(electionInformation InformationElectionEntity) {
 	// 1. create coordinator message
-	electionCoordinatorMessage := InformationElectionDTO{
+	electionCoordinatorMessage := InformationElectionEntity{
 		Algorithm: electionInformation.Algorithm,
 		Payload:   MessageCoordinator,
 		Job:       electionInformation.Job,
@@ -184,7 +188,7 @@ func sendMessagesCoordinator(electionInformation InformationElectionDTO) {
 	}
 	// 2. send all users the coordinator message
 	for _, user := range identity.Users {
-		_, err := pkg.RequestPOST(user.Endpoint + RouteElection, string(payload))
+		_, err := pkg.RequestPOST(user.Endpoint+RouteElection, string(payload))
 		if err != nil {
 			logrus.Fatalf("[election.sendMessagesCoordinator] Error sending post request to identity with error %s", err)
 		}

@@ -32,7 +32,7 @@ import (
 //  '403':
 //    description: operation not available
 func adapterElectionMessage(c *gin.Context) {
-	var electionInformation election.InformationElectionDTO
+	var electionInformation election.InformationElectionEntity
 	err := c.BindJSON(&electionInformation)
 	if err != nil {
 		logrus.Fatalf("[api.adapterElectionMessage] Error marshal electionInformation with error %s", err)
@@ -65,7 +65,7 @@ func adapterElectionMessage(c *gin.Context) {
 //  '403':
 //    description: operation not available
 func adapterStartElectionMessage(c *gin.Context) {
-	var electionInformation election.InputInformationElectionDTO
+	var electionInformation election.InputInformationElectionEntity
 	err := c.BindJSON(&electionInformation)
 	if err != nil {
 		logrus.Fatalf("[api.adapterStartElectionMessage] Error marshal electionInformation with error %s", err)
@@ -91,11 +91,11 @@ func adapterStartElectionMessage(c *gin.Context) {
 //  '403':
 //    description: operation not available
 func adapterStartStaticElectionMessage(c *gin.Context) {
-	var electionInformation = election.InformationElectionDTO{
+	var electionInformation = election.InformationElectionEntity{
 		Algorithm: election.Algorithm,
 		Payload:   election.MessageElection,
 		User:      identity.YourUserInformation.UserId,
-		Job:       election.InformationJobDTO{},
+		Job:       election.InformationJobEntity{},
 		Message:   "origin adapterStartStaticElectionMessage",
 	}
 	electionInformationResponse := election.StartElectionAlgorithm(electionInformation)

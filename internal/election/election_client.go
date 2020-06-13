@@ -1,9 +1,10 @@
 package election
 
 import (
-	"github.com/sirupsen/logrus"
 	"goBully/internal/identity"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Public function to interact with election
@@ -21,13 +22,13 @@ const MessageCoordinator = "CoordinatorUserId"
 const MessageAnswer = "answer"
 const MessageElection = "election"
 
-// current CoordinatorUserId
+// CoordinatorUserId current CoordinatorUserId
 var CoordinatorUserId = ""
 
 /*
 start election algorithm (your initiative)
- */
-func StartElectionAlgorithm(informationElectionDTO InformationElectionDTO) InformationElectionDTO {
+*/
+func StartElectionAlgorithm(informationElectionDTO InformationElectionEntity) InformationElectionEntity {
 	logrus.Infof("[election.StartElectionAlgorithm] starting..")
 	response := ReceiveMessage(informationElectionDTO)
 	return response
@@ -36,15 +37,15 @@ func StartElectionAlgorithm(informationElectionDTO InformationElectionDTO) Infor
 /*
 Receive message public mapper
 */
-func ReceiveMessage(electionInformation InformationElectionDTO) InformationElectionDTO {
+func ReceiveMessage(electionInformation InformationElectionEntity) InformationElectionEntity {
 	return receiveMessage(electionInformation)
 }
 
 /*
 Helper method to enrich input data
- */
-func TransformInputInfoElectionDTO(inputInformationElectionDTO InputInformationElectionDTO)InformationElectionDTO {
-	return InformationElectionDTO{
+*/
+func TransformInputInfoElectionDTO(inputInformationElectionDTO InputInformationElectionEntity) InformationElectionEntity {
+	return InformationElectionEntity{
 		Algorithm: Algorithm,
 		Payload:   inputInformationElectionDTO.Payload,
 		User:      identity.YourUserInformation.UserId,
@@ -55,74 +56,77 @@ func TransformInputInfoElectionDTO(inputInformationElectionDTO InputInformationE
 
 /*
 Helper method to get a dummy election message
- */
-func DummyElectionInfoDTO() InformationElectionDTO {
-	return InformationElectionDTO{
+*/
+func DummyElectionInfoDTO() InformationElectionEntity {
+	return InformationElectionEntity{
 		Algorithm: Algorithm,
 		Payload:   MessageElection,
 		User:      identity.YourUserInformation.UserId,
-		Job:       InformationJobDTO{},
+		Job:       InformationJobEntity{},
 		Message:   "origin adapterSendRegisterToService",
 	}
 }
 
-// input election state information
+/*
+STRUCTS
+*/
+
+// InputInformationElectionEntity input election state information
 // swagger:model
-type InputInformationElectionDTO struct {
+type InputInformationElectionEntity struct {
 	// the payload for the current state of the algorithm
 	// required: true
-	Payload   string            `json:"payload"`
+	Payload string `json:"payload"`
 	// jon information in InformationJobDTO
 	// required: true
-	Job       InformationJobDTO `json:"job"`
+	Job InformationJobEntity `json:"job"`
 	// something you want to tell the other one
 	// required: true
-	Message   string            `json:"message"`
+	Message string `json:"message"`
 }
 
-
-// election state information
+// InformationElectionEntity election state information
 // swagger:model
-type InformationElectionDTO struct {
+type InformationElectionEntity struct {
 	// name of the algorithm used
 	// required: true
-	Algorithm string            `json:"algorithm"`
+	Algorithm string `json:"algorithm"`
 	// the payload for the current state of the algorithm
 	// required: true
-	Payload   string            `json:"payload"`
+	Payload string `json:"payload"`
 	// uri of the identity sending this request
 	// required: true
-	User      string            `json:"identity"`
+	User string `json:"identity"`
 	// job information in InformationJobDTO
 	// required: true
-	Job       InformationJobDTO `json:"job"`
+	Job InformationJobEntity `json:"job"`
 	// something you want to tell the other one
 	// required: true
-	Message   string            `json:"message"`
+	Message string `json:"message"`
 }
 
-// election job details
+// InformationJobEntity election job details
 // swagger:model
-type InformationJobDTO struct {
+type InformationJobEntity struct {
 	// some identity chosen by the initiator to identify this request
 	// required: true
-	Id       string `json:"identity"`
+	Id string `json:"identity"`
 	// uri to the task to accomplish
 	// required: true
-	Task     string `json:"task"`
+	Task string `json:"task"`
 	// uri or url to resource where actions are required
 	// required: true
 	Resource string `json:"resource"`
 	// method to take – if already known
 	// required: true
-	Method   string `json:"method"`
+	Method string `json:"method"`
 	// data to use/post for the task
 	// required: true
-	Data     string `json:"data"`
+	Data string `json:"data"`
 	// an url where the initiator can be reached with the results/token
 	// required: true
 	Callback string `json:"callback"`
 	// something you want to tell the other one
 	// required: true
-	Message  string `json:"message"`
+	Message string `json:"message"`
 }

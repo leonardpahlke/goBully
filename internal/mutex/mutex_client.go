@@ -9,50 +9,77 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// PUBLIC
+/*
+PUBLIC vals
+*/
+
 // API Endpoints
+
+// RouteMutexMessage api endpoint to send mutex messages
 const RouteMutexMessage = "/mutex"
+
+// RouteMutexState api endpoint to request current user mutex state
 const RouteMutexState = "/mutexstate"
 
-// states a client can be in regarding entering the mutex
+// Mutex States
+
+// StateReleased user is in idle state
 const StateReleased = "released"
+
+// StateWanting user wants to enter critical section and is waiting for reply-ok messages
 const StateWanting = "wanting"
+
+// StateHeld user is currently in the critical section
 const StateHeld = "held"
 
-// messages send across clients
+// Mutex Messages
+
+// RequestMessage this message is send if the user would like to enter the critical section
 const RequestMessage = "request"
+
+// ReplyOKMessage this message is send to a 'request' message if it's ok for the user the reqesting user enters the critical section
 const ReplyOKMessage = "reply-ok"
 
-// static mutex val's
+/*
+PRIVATE vals
+*/
+
+// Config
+
+// waitingTime how long to wait until a user sends a response back
+const waitingTime = time.Second * 10
+
+// mutexYourReply mutex state static reply response
 var mutexYourReply = identity.YourUserInformation.Endpoint
+
+// mutexYourUser mutex state static user response
 var mutexYourUser = RouteMutexMessage
 
-// waiting time to send health checks
-const waitingTime = time.Second * 3
-
-// PRIVATE
-// local lamport clock
+// clock mutex internal local lamport clock
 var clock int32 = 0
 
-// local mutex state
+// state current user mutex state
 var state = StateReleased
+
+/*
+METHODS
+*/
 
 /*
 ReceiveMutexMessage - receive a mutex message from a user
 respond with request or reply-ok
 */
-func ReceiveMutexMessage(mutexMessage MessageMutexDTO) MessageMutexDTO {
+func ReceiveMutexMessage(mutexMessage MessageMutexEntity) {
 	logrus.Infof("[mutex_client.ReceiveMutexMessage] received mutex message from user %s", mutexMessage.User)
-	mutexMessageResponse := receiveMutexMessage(mutexMessage)
-	return mutexMessageResponse
+	receiveMutexMessage(mutexMessage)
 }
 
 /*
 RequestMutexState - return local mutex a state
 */
-func RequestMutexState() StateMutexDTO {
+func RequestMutexState() StateMutexEntity {
 	logrus.Infof("[mutex_client.RequestMutexState] received mutex state request")
-	return StateMutexDTO{
+	return StateMutexEntity{
 		State: state,
 		Time:  clock,
 	}
@@ -80,12 +107,12 @@ func LeaveCriticalSection() {
 /*
 RequestUserState - request user state information
 */
-func RequestUserState(userEndpoint string, userMutexStateEndpoint string) StateMutexDTO {
+func RequestUserState(userEndpoint string, userMutexStateEndpoint string) StateMutexEntity {
 	res, err := pkg.RequestGET(userEndpoint + userMutexStateEndpoint)
 	if err != nil {
 		logrus.Fatalf("[mutex_client.RequestUserState] Error request with error %s", err)
 	}
-	var stateMutexDTO StateMutexDTO
+	var stateMutexDTO StateMutexEntity
 	err = json.Unmarshal(res, &stateMutexDTO)
 	if err != nil {
 		logrus.Fatalf("[mutex_client.RequestUserState] Error Unmarshal stateMutexDTO with error %s", err)
@@ -93,9 +120,13 @@ func RequestUserState(userEndpoint string, userMutexStateEndpoint string) StateM
 	return stateMutexDTO
 }
 
-// mutex message
+/*
+STRUCTS
+*/
+
+// MessageMutexEntity mutex message
 // swagger:model
-type MessageMutexDTO struct {
+type MessageMutexEntity struct {
 	// message, reply-ok or request
 	// required: true
 	Msg string `json:"msg"`
@@ -110,9 +141,9 @@ type MessageMutexDTO struct {
 	User string `json:"user"`
 }
 
-// mutex state
+// StateMutexEntity mutex state
 // swagger:model
-type StateMutexDTO struct {
+type StateMutexEntity struct {
 	// current state: released, wanting or held
 	// required: true
 	State string `json:"state"`

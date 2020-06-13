@@ -25,7 +25,7 @@ func requestCriticalArea() {
 	// 2. increment clock, you are about to send mutex-messages
 	incrementClock(clock)
 	// 3. create a request mutex-message
-	var mutexRequestMessage = MessageMutexDTO{
+	var mutexRequestMessage = MessageMutexEntity{
 		Msg:   RequestMessage,
 		Time:  clock,
 		Reply: mutexYourReply,
@@ -36,121 +36,95 @@ func requestCriticalArea() {
 		logrus.Fatalf("[mutex_send.requestCriticalArea] Error marshal mutexMessage with error %s", err)
 	}
 	payloadString := string(payload)
-	// 4. GO - send all users the request mutex-message
+
+	// create a response channel for every user (including yourself)
+	var userReponseChannels []userReponseChannel
 	for _, user := range identity.Users {
-		go sendRequestToUser(user, payloadString)
+		userReponseChannels = append(userReponseChannels, userReponseChannel{
+			user:    user,
+			channel: make(chan string),
+		})
+	}
+
+	// create new object to manage responses of this request
+	requestResponseChannel := responseChannel{
+		replyOkReceivingList: userReponseChannels,
+		allReplyOkReceived:   make(chan string),
+	}
+
+	// add new requestResponseChannel to replyOkwaitingList
+	replyOkwaitingList = append(replyOkwaitingList, requestResponseChannel)
+
+	// 4. GO - send all users the request mutex-message
+	for _, userChannel := range userReponseChannels {
+		go sendRequestToUser(userChannel, payloadString)
 	}
 	// 5. wait for all users to reply-ok to your request
-	mutexReceivedAllRequestsMessage := <-mutexReceivedAllRequests
-	logrus.Infof("[mutex_send.requestCriticalArea] received all requests, you can now enter the critical area - %s", mutexReceivedAllRequestsMessage)
+	receivedAllRequestsMessage := <-requestResponseChannel.allReplyOkReceived
+
+	logrus.Infof("[mutex_send.requestCriticalArea] received all requests, you can now enter the critical area - %s", receivedAllRequestsMessage)
+	// remove the waiting reponses object from the list
+	removeFirstWaitingTask()
+
 	// 6. enterCriticalSection()
 	enterCriticalSection()
-	// exec leaveCriticalSection() to leave
+	// exec LeaveCriticalSection() to leave
 }
 
 /*
 sendRequestToUser - send request message to a user
-1. create channel and add it to mutexWaitingRequests
-2. GO - checkClientIfResponded() start listening and asking back for user availability
-3. send POST to user and wait for reply-ok answer
-4. receive answer message
-5. check if answer message is reply-ok message
-6. send message through channel that user responded -> no need to listen anymore
-7. add waiting request to responded requests
-8. check if all users responded
+1. send POST to user and wait for reply-ok answer
+2. start checking if user answered
 */
-func sendRequestToUser(user identity.InformationUserDTO, payloadString string) {
-	// 1. create channel and add it to mutexWaitingRequests
-	waitingRequestChannel := make(chan string)
-	waitingRequest := channelUserRequest{
-		userEndpoint:     user.Endpoint,
-		channel:          waitingRequestChannel,
-		user:             user,
-		sendHealthChecks: true,
-	}
-	mutexWaitingRequests = append(mutexWaitingRequests, waitingRequest)
-	// 2. start listening and asking back for user availability
-	go checkClientIfResponded(waitingRequest)
-	// 3. send POST to user and wait for reply-ok answer
-	res, err := pkg.RequestPOST(user.Endpoint+RouteMutexMessage, payloadString)
+func sendRequestToUser(userResChannel userReponseChannel, payloadString string) {
+	// 1. send POST to user and wait for reply-ok answer
+	_, err := pkg.RequestPOST(userResChannel.user.Endpoint+RouteMutexMessage, payloadString)
 	if err != nil {
 		logrus.Fatalf("[mutex_send.sendRequestToUser] Error sending POST with error %s", err)
 	}
-	// 4. receive answer message
-	logrus.Infof("[mutex_send.sendRequestToUser] send request messages to user %s", user.UserId)
-	var mutexAnswerMessage MessageMutexDTO
-	err = json.Unmarshal(res, &mutexAnswerMessage)
-	if err != nil {
-		logrus.Fatalf("[mutex_send.sendRequestToUser] Error sending POST with error %s", err)
-	}
-	// 5. check if answer message is reply-ok message
-	if mutexAnswerMessage.Msg != ReplyOKMessage {
-		logrus.Fatalf("[mutex_send.sendRequestToUser] Error sending POST with error %s", err)
-	}
-	// 6. send message through channel that user responded -> no need to listen anymore
-	waitingRequestChannel <- ReplyOKMessage
-	logrus.Infof("[mutex_send.sendRequestToUser] reply-ok message received from user %s", mutexAnswerMessage.User)
-	// 7. add waiting request to responded requests
-	mutexReceivedRequests = append(mutexReceivedRequests, waitingRequest)
-	// 8. check if all users responded
-	checkIfAllUsersResponded()
+	logrus.Infof("[mutex_send.sendRequestToUser] send request messages to user %s", userResChannel.user.UserId)
+	// 2. start checking if user answered
+	checkClientIfResponded(userResChannel)
 }
 
 /*
 checkClientIfResponded - listen if client reply-ok'ed and check with him back if not
 1. GO - clientHealthCheck()
 2. receiving message
-3. if message is not reply-ok
-	3.1 abroad health checks, user answered
-4. if message is something else
-4.1 ping user
-4.2 wait some time
-4.3 if answered: loopback to 2
-4.4 if not answered:
-	4.4.1 delete user
-	4.4.2 send reply-ok message to waitingRequestChannel
-	4.4.3 stop hearth beat
+3. if message is reply-ok, return
+4 ping user
+5 wait some time
+6 if answered: loopback to 2
+7 if not answered, delete user
 */
-func checkClientIfResponded(waitingForUserResponseObj channelUserRequest) {
-	logrus.Infof("[mutex_send.checkClientIfResponded] listen if user answers %s", waitingForUserResponseObj.userEndpoint)
+func checkClientIfResponded(userResChannel userReponseChannel) {
+	logrus.Infof("[mutex_send.checkClientIfResponded] listen if user answers %s", userResChannel.user.Endpoint)
 	// 1. clientHealthCheck() - sends beats through channel
-	go clientHealthCheck(waitingForUserResponseObj)
+	go clientHealthCheck(userResChannel)
 	for true {
 		// 2. receiving message
-		msg := <-waitingForUserResponseObj.channel
-		// 3. if message is reply-ok
+		msg := <-userResChannel.channel
+		// 3. if message is reply-ok, return
 		if msg == ReplyOKMessage {
-			// 3.1 abroad health checks, user answered
-			break
+			return
+		}
+
+		// user still did not answered - pinging user to check if he is alive
+
+		logrus.Warnf("[mutex_send.checkClientIfResponded] received message: %s", msg)
+		var mutexUserStatusResponse StateMutexEntity
+		// 4 ping user
+		pingUser(userResChannel.user.Endpoint, RouteMutexState, &mutexUserStatusResponse)
+		// 5 wait some time
+		time.Sleep(waitingTime)
+		if checkIfStateObjectIsEmpty(mutexUserStatusResponse) {
+			// 6 if answered: loopback to 2
+			logrus.Infof("[mutex_send.checkClientIfResponded] client is alive and in state: %s", mutexUserStatusResponse.State)
 		} else {
-			logrus.Warnf("[mutex_send.checkClientIfResponded] received message: %s", msg)
-			var mutexUserStatusResponse StateMutexDTO
-			// 4.1 ping user
-			pingUser(waitingForUserResponseObj.userEndpoint, RouteMutexState, &mutexUserStatusResponse)
-			// 4.2 wait some time
-			time.Sleep(waitingTime)
-			if checkIfStateObjectIsEmpty(mutexUserStatusResponse) {
-				// 4.3 if answered: loopback to 2
-				logrus.Infof("[mutex_send.checkClientIfResponded] client is alive and in state: %s", mutexUserStatusResponse.State)
-			} else {
-				// 4.4 if not answered
-				logrus.Warnf("[mutex_send.checkClientIfResponded] user: %s, did not respond", waitingForUserResponseObj.userEndpoint)
-				// 4.4.1 delete user
-				identity.DeleteUser(waitingForUserResponseObj.user)
-				// 4.4.2 send reply-ok message to waitingRequestChannel
-				// break waiting -- and send a artificial reply-ok, remove user because of inactivity
-				waitingForUserResponseObj.channel <- ReplyOKMessage
-				// 4.4.3 stop hearth beat
-				removeChannelUserRequest(waitingForUserResponseObj, mutexWaitingRequests)
-				waitingForUserResponseObj = channelUserRequest{
-					userEndpoint:     waitingForUserResponseObj.userEndpoint,
-					user:             waitingForUserResponseObj.user,
-					channel:          waitingForUserResponseObj.channel,
-					sendHealthChecks: false,
-				}
-				mutexWaitingRequests = append(mutexWaitingRequests, waitingForUserResponseObj)
-				break
-			}
+			logrus.Warnf("[mutex_send.checkClientIfResponded] user: %s, did not respond", userResChannel.user.Endpoint)
+			// 7 delete user - inactive
+			identity.DeleteUser(userResChannel.user)
+			return
 		}
 	}
 }
@@ -159,26 +133,17 @@ func checkClientIfResponded(waitingForUserResponseObj channelUserRequest) {
 clientHealthCheck - send health check to the client after a period of time
 1. start loop
 2. wait some time
-3. check if user answered
-4. YES, break, return
-5. NO, send none message through waitingRequestChannel
+3. NO, send none message through userResChannel.channel
+!!! this method returns if checkClientIfResponded() returns!!!
 */
-func clientHealthCheck(waitingForUserResponseObj channelUserRequest) {
-	logrus.Infof("[mutex_send.clientHealthCheck] listen if user answers %s", waitingForUserResponseObj.userEndpoint)
+func clientHealthCheck(userResChannel userReponseChannel) {
+	logrus.Infof("[mutex_send.clientHealthCheck] listen if user answers endpoint: %s", userResChannel.user.Endpoint)
 	// 1. start loop
 	for true {
 		// 2. wait some time
 		time.Sleep(waitingTime)
-		// 3. check if user answered
-		// 4. update waitingForUserResponseObj to know if
-		waitingForUserResponseObj = getWaitingForUserResponseObj(waitingForUserResponseObj)
-		if waitingForUserResponseObj.sendHealthChecks {
-			// 4. YES, break, return
-			break
-		} else {
-			// 5. NO, send none message through waitingRequestChannel
-			waitingForUserResponseObj.channel <- "none"
-		}
+		// 3. NO, send none message through userResChannel.channel
+		userResChannel.channel <- "none"
 	}
 }
 
@@ -188,47 +153,40 @@ func clientHealthCheck(waitingForUserResponseObj channelUserRequest) {
 /*
 pingUser - request user mutex state to tell if he is alive
 */
-func pingUser(userEndpoint string, mutexStateEndpoint string, mutexUserStatus *StateMutexDTO) {
+func pingUser(userEndpoint string, mutexStateEndpoint string, mutexUserStatus *StateMutexEntity) {
 	*mutexUserStatus = RequestUserState(userEndpoint, mutexStateEndpoint)
-}
-
-/*
-getWaitingForUserResponseObj - return waitingForUserResponseObj from list mutexWaitingRequests; which might changed
-*/
-func getWaitingForUserResponseObj(waitingForUserResponseObj channelUserRequest) channelUserRequest {
-	for _, waitingRequest := range mutexWaitingRequests {
-		if waitingRequest.userEndpoint == waitingForUserResponseObj.userEndpoint {
-			return waitingRequest
-		}
-	}
-	logrus.Fatalf("[mutex_send.getWaitingForUserResponseObj] all users answered, send notification to waiting task")
-	return waitingForUserResponseObj
-}
-
-/*
-checkIfAllUsersResponded - check if all users responded with reply-ok after requesting critical section
-1. clean types mutexReceivedRequests, mutexWaitingRequests
-2. notify channel mutexReceivedAllRequests
-3. clean up both list to reply to
-*/
-func checkIfAllUsersResponded() {
-	if len(mutexWaitingRequests) == len(mutexReceivedRequests) {
-		// 1. clean types mutexReceivedRequests, mutexWaitingRequests
-		mutexReceivedRequests = []channelUserRequest{}
-		mutexWaitingRequests = []channelUserRequest{}
-		logrus.Infof("[mutex_send.checkIfAllUsersResponded] all users answered, send notification to waiting task")
-		// 2. notify channel mutexReceivedAllRequests
-		mutexReceivedAllRequests <- "good to go"
-		// 3. clean up both list to reply to
-		mutexWaitingRequests = []channelUserRequest{}
-		mutexReceivedRequests = []channelUserRequest{}
-	}
 }
 
 /*
 checkIfStateObjectIsEmpty - return whether the StateMutexDTO is empty
 */
-func checkIfStateObjectIsEmpty(mutexUserState StateMutexDTO) bool {
-	var emptyMutexUserState StateMutexDTO
+func checkIfStateObjectIsEmpty(mutexUserState StateMutexEntity) bool {
+	var emptyMutexUserState StateMutexEntity
 	return mutexUserState == emptyMutexUserState
+}
+
+/*
+removeFirstWaitingTask - remove first task from waiting list
+*/
+func removeFirstWaitingTask() {
+	i := 0
+	copy(replyOkwaitingList[i:], replyOkwaitingList[i+1:])              // Shift a[i+1:] left one index.
+	replyOkwaitingList[len(replyOkwaitingList)-1] = responseChannel{}   // Erase last element (write zero value).
+	replyOkwaitingList = replyOkwaitingList[:len(replyOkwaitingList)-1] // Truncate slice.
+}
+
+/*
+STRUCTS
+*/
+
+// message to channel to identify users
+type responseChannel struct {
+	replyOkReceivingList []userReponseChannel
+	allReplyOkReceived   chan string
+}
+
+// channel to manage user reponses
+type userReponseChannel struct {
+	user    identity.InformationUserDTO
+	channel chan string
 }

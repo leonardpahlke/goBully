@@ -1,7 +1,7 @@
 basePath: /
 consumes:
-  - application/json
-  - application/xml
+- application/json
+- application/xml
 definitions:
   InformationElectionDTO:
     description: election state information
@@ -15,7 +15,7 @@ definitions:
         type: string
         x-go-name: User
       job:
-        $ref: "#/definitions/InformationJobDTO"
+        $ref: '#/definitions/InformationJobDTO'
       message:
         description: something you want to tell the other one
         type: string
@@ -25,11 +25,11 @@ definitions:
         type: string
         x-go-name: Payload
     required:
-      - algorithm
-      - payload
-      - identity
-      - job
-      - message
+    - algorithm
+    - payload
+    - identity
+    - job
+    - message
     type: object
     x-go-package: goBully/internal/election
   InformationJobDTO:
@@ -64,13 +64,13 @@ definitions:
         type: string
         x-go-name: Task
     required:
-      - identity
-      - task
-      - resource
-      - method
-      - data
-      - callback
-      - message
+    - identity
+    - task
+    - resource
+    - method
+    - data
+    - callback
+    - message
     type: object
     x-go-package: goBully/internal/election
   InformationUserDTO:
@@ -85,8 +85,8 @@ definitions:
         type: string
         x-go-name: UserId
     required:
-      - userId
-      - endpoint
+    - userId
+    - endpoint
     type: object
     x-go-package: goBully/internal/identity
   InformationUserInfoDTO:
@@ -99,18 +99,18 @@ definitions:
       users:
         description: all user linked to the api
         items:
-          $ref: "#/definitions/InformationUserDTO"
+          $ref: '#/definitions/InformationUserDTO'
         type: array
         x-go-name: Users
     required:
-      - users
+    - users
     type: object
     x-go-package: goBully/internal/identity
   InputInformationElectionDTO:
     description: input election state information
     properties:
       job:
-        $ref: "#/definitions/InformationJobDTO"
+        $ref: '#/definitions/InformationJobDTO'
       message:
         description: something you want to tell the other one
         type: string
@@ -120,9 +120,9 @@ definitions:
         type: string
         x-go-name: Payload
     required:
-      - payload
-      - job
-      - message
+    - payload
+    - job
+    - message
     type: object
     x-go-package: goBully/internal/election
   MessageMutexDTO:
@@ -146,10 +146,10 @@ definitions:
         type: string
         x-go-name: User
     required:
-      - msg
-      - time
-      - reply
-      - user
+    - msg
+    - time
+    - reply
+    - user
     type: object
     x-go-package: goBully/internal/mutex
   RegisterInfoDTO:
@@ -168,9 +168,9 @@ definitions:
         type: string
         x-go-name: NewUserId
     required:
-      - distributing_user_id
-      - new_user_id
-      - endpoint
+    - distributing_user_id
+    - new_user_id
+    - endpoint
     type: object
     x-go-package: goBully/internal/identity
   RegisterResponseDTO:
@@ -183,19 +183,19 @@ definitions:
       user_id_infos:
         description: all registered users
         items:
-          $ref: "#/definitions/InformationUserDTO"
+          $ref: '#/definitions/InformationUserDTO'
         type: array
         x-go-name: UserIdInfos
     required:
-      - message
-      - user_id_infos
+    - message
+    - user_id_infos
     type: object
     x-go-package: goBully/internal/identity
   StateMutexDTO:
     description: mutex state
     properties:
       state:
-        description: "current state: released, wanting or held"
+        description: 'current state: released, wanting or held'
         type: string
         x-go-name: State
       time:
@@ -204,8 +204,8 @@ definitions:
         type: integer
         x-go-name: Time
     required:
-      - state
-      - time
+    - state
+    - time
     type: object
     x-go-package: goBully/internal/mutex
 host: localhost
@@ -224,114 +224,114 @@ paths:
   /election:
     post:
       consumes:
-        - application/json
+      - application/json
       description: handle election algorithm state
       operationId: electionMessage
       parameters:
-        - description: election algorithm - get a coordinator
-          in: body
-          name: election
-          required: true
-          schema:
-            $ref: "#/definitions/InformationElectionDTO"
+      - description: election algorithm - get a coordinator
+        in: body
+        name: election
+        required: true
+        schema:
+          $ref: '#/definitions/InformationElectionDTO'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/InformationElectionDTO"
+            $ref: '#/definitions/InformationElectionDTO'
         "403":
           description: operation not available
         "404":
           description: error in operation
       tags:
-        - election
+      - election
   /mutex:
     post:
       consumes:
-        - application/json
+      - application/json
       description: handle mutex message
       operationId: mutexMessage
       parameters:
-        - description: mutex message information
-          in: body
-          name: mutex
-          required: true
-          schema:
-            $ref: "#/definitions/MessageMutexDTO"
+      - description: mutex message information
+        in: body
+        name: mutex
+        required: true
+        schema:
+          $ref: '#/definitions/MessageMutexDTO'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/MessageMutexDTO"
+            $ref: '#/definitions/MessageMutexDTO'
         "403":
           description: operation not available
         "404":
           description: error in operation
       tags:
-        - mutex
+      - mutex
   /mutexstate:
     get:
       consumes:
-        - application/json
+      - application/json
       description: handle mutex a state request message
       operationId: mutexStateRequest
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/StateMutexDTO"
+            $ref: '#/definitions/StateMutexDTO'
         "403":
           description: operation not available
         "404":
           description: error in operation
       tags:
-        - mutex
+      - mutex
   /register:
     post:
       consumes:
-        - application/json
+      - application/json
       description: Register User information to api
       operationId: registerService
       parameters:
-        - description: send register information to get in the network
-          in: body
-          name: register
-          required: true
-          schema:
-            $ref: "#/definitions/RegisterInfoDTO"
+      - description: send register information to get in the network
+        in: body
+        name: register
+        required: true
+        schema:
+          $ref: '#/definitions/RegisterInfoDTO'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/RegisterResponseDTO"
+            $ref: '#/definitions/RegisterResponseDTO'
         "403":
           description: operation not available
         "404":
           description: error in operation
       tags:
-        - user
+      - user
   /sendregister:
     post:
       consumes:
-        - application/json
+      - application/json
       description: User sends register request to another user and kick off election to get the new coordinator
       operationId: triggerRegisterToService
       parameters:
-        - description: trigger registration, api sends registration message to other
-          in: query
-          name: sendregister
-          required: true
-          type: number
+      - description: trigger registration, api sends registration message to other
+        in: query
+        name: sendregister
+        required: true
+        type: number
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
@@ -340,15 +340,15 @@ paths:
         "404":
           description: error in operation
       tags:
-        - user
+      - user
   /sendunregister:
     post:
       consumes:
-        - application/json
+      - application/json
       description: unregister yourself from other user api user lists
       operationId: sendUnregisterToServices
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
@@ -357,67 +357,67 @@ paths:
         "404":
           description: error in operation
       tags:
-        - user
+      - user
   /startelection:
     post:
       consumes:
-        - application/json
+      - application/json
       description: execute election algorithm
       operationId: startElectionMessage
       parameters:
-        - description: start election algorithm - to get a coordinator
-          in: body
-          name: startelection
-          required: true
-          schema:
-            $ref: "#/definitions/InputInformationElectionDTO"
+      - description: start election algorithm - to get a coordinator
+        in: body
+        name: startelection
+        required: true
+        schema:
+          $ref: '#/definitions/InputInformationElectionDTO'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/InformationElectionDTO"
+            $ref: '#/definitions/InformationElectionDTO'
         "403":
           description: operation not available
         "404":
           description: error in operation
       tags:
-        - election
+      - election
   /startstaticelection:
     post:
       consumes:
-        - application/json
+      - application/json
       description: execute election algorithm with preset input
       operationId: startStaticElectionMessage
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/InformationElectionDTO"
+            $ref: '#/definitions/InformationElectionDTO'
         "403":
           description: operation not available
         "404":
           description: error in operation
       tags:
-        - election
+      - election
   /unregister:
     post:
       consumes:
-        - application/json
+      - application/json
       description: unregister api from your user list
       operationId: unregisterFromService
       parameters:
-        - description: some api is unregistering from all users, remove user from active users
-          in: body
-          name: unregister
-          required: true
-          schema:
-            $ref: "#/definitions/InformationUserDTO"
+      - description: some api is unregistering from all users, remove user from active users
+        in: body
+        name: unregister
+        required: true
+        schema:
+          $ref: '#/definitions/InformationUserDTO'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
@@ -426,30 +426,30 @@ paths:
         "404":
           description: error in operation
       tags:
-        - user
+      - user
   /users:
     get:
       consumes:
-        - application/json
+      - application/json
       description: Get registered user information's and coordinator
       operationId: users
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: successful operation
           schema:
-            $ref: "#/definitions/InformationUserInfoDTO"
+            $ref: '#/definitions/InformationUserInfoDTO'
         "403":
           description: operation not available
         "404":
           description: error in operation
       tags:
-        - user
+      - user
 produces:
-  - application/json
-  - application/xml
+- application/json
+- application/xml
 schemes:
-  - http
-  - https
+- http
+- https
 swagger: "2.0"
