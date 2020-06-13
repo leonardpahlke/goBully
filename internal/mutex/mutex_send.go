@@ -14,9 +14,13 @@ requestCriticalArea - tell all users that this user wants to enter the critical 
 1. set state to 'wanting'
 2. increment clock, you are about to send mutex-messages
 3. create a request mutex-message
-4. GO - send all users the request mutex-message
-5. wait for all users to reply-ok to your request
-6. enterCriticalSection()
+4. create a response channel for every user (including yourself)
+5. create new object to manage responses of this request
+6. add new requestResponseChannel to replyOkwaitingList
+7. GO - send all users the request mutex-message
+8. wait for all users to reply-ok to your request
+9. remove the waiting reponses object from the list
+10. enterCriticalSection()
 */
 func requestCriticalArea() {
 	// 1. set state to 'wanting'
@@ -37,7 +41,7 @@ func requestCriticalArea() {
 	}
 	payloadString := string(payload)
 
-	// create a response channel for every user (including yourself)
+	// 4. create a response channel for every user (including yourself)
 	var userReponseChannels []userReponseChannel
 	for _, user := range identity.Users {
 		userReponseChannels = append(userReponseChannels, userReponseChannel{
@@ -46,27 +50,27 @@ func requestCriticalArea() {
 		})
 	}
 
-	// create new object to manage responses of this request
+	// 5. create new object to manage responses of this request
 	requestResponseChannel := responseChannel{
 		replyOkReceivingList: userReponseChannels,
 		allReplyOkReceived:   make(chan string),
 	}
 
-	// add new requestResponseChannel to replyOkwaitingList
+	// 6. add new requestResponseChannel to replyOkwaitingList
 	replyOkwaitingList = append(replyOkwaitingList, requestResponseChannel)
 
-	// 4. GO - send all users the request mutex-message
+	// 7. GO - send all users the request mutex-message
 	for _, userChannel := range userReponseChannels {
 		go sendRequestToUser(userChannel, payloadString)
 	}
-	// 5. wait for all users to reply-ok to your request
+	// 8. wait for all users to reply-ok to your request
 	receivedAllRequestsMessage := <-requestResponseChannel.allReplyOkReceived
 
 	logrus.Infof("[mutex_send.requestCriticalArea] received all requests, you can now enter the critical area - %s", receivedAllRequestsMessage)
-	// remove the waiting reponses object from the list
+	// 9. remove the waiting reponses object from the list
 	removeFirstWaitingTask()
 
-	// 6. enterCriticalSection()
+	// 10. enterCriticalSection()
 	enterCriticalSection()
 	// exec LeaveCriticalSection() to leave
 }

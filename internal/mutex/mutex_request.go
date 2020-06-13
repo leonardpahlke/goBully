@@ -74,7 +74,8 @@ func waitingForSendingAnswerBack(mutexMessage MessageMutexEntity) {
 	msg := <-requestChannel
 	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] received: %s from channel", msg)
 	// remove requestChannelInfo form mutexSendRequests
-	replyOkSendingList = rmReplyOkSendingUser(userSendingChan)
+	rmReplyOkSendingUser(userSendingChan)
+
 }
 
 /*
