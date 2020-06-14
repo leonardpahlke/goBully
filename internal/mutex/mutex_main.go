@@ -1,6 +1,8 @@
 package mutex
 
 import (
+	"goBully/internal/identity"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,20 +17,30 @@ var mutexCriticalSection = make(chan string)
 
 /*
 receiveMutexMessage - map logic after message
+1. message is request
+2. message is reply-ok
+3. else error
 */
 func receiveMutexMessage(mutexMessage MessageMutexEntity) {
-	logrus.Infof("[mutex_main.receiveMutexMessage] received message")
+	logrus.Infof("[mutex_main.receiveMutexMessage] message received")
 
 	switch mutexMessage.Msg {
+
+	// 1. message is request
 	case RequestMessage:
 		receivedRequestMessage(mutexMessage)
+
+	// 2. message is reply-ok
 	case ReplyOKMessage:
 		receivedReplyOkMessage(mutexMessage)
+
+	// 3. else error
 	default:
-		logrus.Fatalf("[mutex_main.receiveMutexMessage] message: %s, is not could not a request message", mutexMessage.Msg)
+		logrus.Fatalf("[mutex_main.receiveMutexMessage] message: %s, could not get identified", mutexMessage.Msg)
 	}
-	// completed processing request message
+
 	incrementClock(mutexMessage.Time)
+	logrus.Infof("[mutex_main.receiveMutexMessage] completed processing request message")
 }
 
 /*
@@ -37,8 +49,11 @@ enterCriticalSection - enter critical section
 2. wait to get notified to
 */
 func enterCriticalSection() {
+	// 1. update state to 'held'
 	state = StateHeld
+
 	for true {
+		// 2. wait to get notified to
 		stateChange := <-mutexCriticalSection
 		if stateChange == StateReleased {
 			logrus.Infof("[mutex_main.enterCriticalSection] 'released' state received, return")
@@ -59,6 +74,7 @@ func leaveCriticalSection() {
 	state = StateReleased
 	logrus.Infof("[mutex_main.leaveCriticalSection] leave, state: %s", state)
 	mutexCriticalSection <- state
+
 	// 2. notify critical section user is no longer in it
 	for _, replyokSendInvokeChannel := range replyOkSendingList {
 		replyokSendInvokeChannel.channel <- ReplyOKMessage
@@ -85,6 +101,18 @@ func rmReplyOkSendingUser(userSendingChan userSendingChannel) {
 }
 
 /*
+getMutexMessage - return mutex-message with set msg (reply-ok or request)
+*/
+func getMutexMessage(msg string) MessageMutexEntity {
+	return MessageMutexEntity{
+		Msg:   msg,
+		Time:  clock,
+		Reply: mutexYourReply,
+		User:  mutexYourUser,
+	}
+}
+
+/*
 incrementClock - increase local lamport lock
 */
 func incrementClock(i int32) int32 {
@@ -101,4 +129,32 @@ func max(i int32, j int32) int32 {
 		return i
 	}
 	return j
+}
+
+/*
+Private STRUCTS
+*/
+
+// channel to manage user reponses
+type userSendingChannel struct {
+	userEndpoint string
+	channel      chan string
+}
+
+// channel to manage user reponses
+type taskInformation struct {
+	userEndpoint string
+	channel      chan string
+}
+
+// message to channel to identify users
+type responseChannel struct {
+	replyOkReceivingList []userReponseChannel
+	allReplyOkReceived   chan string
+}
+
+// channel to manage user reponses
+type userReponseChannel struct {
+	user    identity.InformationUserDTO
+	channel chan string
 }

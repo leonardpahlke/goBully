@@ -121,7 +121,7 @@ func RequestUserState(userEndpoint string, userMutexStateEndpoint string) StateM
 }
 
 /*
-STRUCTS
+Public STRUCTS
 */
 
 // MessageMutexEntity mutex message

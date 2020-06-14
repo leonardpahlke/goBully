@@ -162,7 +162,7 @@ It goes like this with 3 clients (**A**,**B**,**C**):
 2. increment clock, you are about to send mutex-messages
 3. create a request mutex-message
 4. create a response channel for every user (including yourself)
-5. create new object to manage responses of this request
+5. create new object to manage responses of this request (containing all user response channels)
 6. add new requestResponseChannel to replyOkwaitingList
 7. GO - send all users the request mutex-message
 8. wait for all users to reply-ok to your request
@@ -171,26 +171,16 @@ It goes like this with 3 clients (**A**,**B**,**C**):
 
 **sendRequestToUser** - send request message to a user
 
-1. create channel and add it to mutexWaitingRequests
-2. GO - checkClientIfResponded() start listening and asking back for user availability
-3. send POST to user and wait for reply-ok answer
-4. receive answer message
-5. check if answer message is reply-ok message
-6. send message through channel that user responded -> no need to listen anymore
-7. add waiting request to responded requests
-8. check if all users responded
+1. send POST to user and wait for reply-ok answer
+2. start checking if user answered
 
 **checkClientIfResponded** - listen if client reply-ok'ed and check with him back if not
 
-1. GO - clientHealthCheck()
-2. receiving message
-3. if message is not reply-ok
-3.1 abroad health checks, user answered
-4. if message is something else
-4.1 ping user
-4.2 wait some time
-4.3 if answered: loopback to 2
-4.4 if not answered:
-4.4.1 delete user
-4.4.2 send reply-ok message to waitingRequestChannel
-4.4.3 stop hearth beat
+1. GO - clientHealthCheck() - sends periodic beats to check whether the user has responded
+2. receiving message send through the channel
+3. if message is reply-ok, return
+4. ping user mutexState
+5. wait some time to get response back
+6. if answered: loopback to 2.
+7. remove user from waiting list
+8. delete user from local user management (inactive)

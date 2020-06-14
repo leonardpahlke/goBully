@@ -8,12 +8,12 @@ import (
 
 /*
 receivedRequestMessage - received a 'request' message
-- in critical section (stage held) -> store request and send reply-ok as soon as leaving critical section
-- in idle (stage released) -> send reply-ok
-- waiting (stage wanting) -> compare clocks and store request if yours is lower (if you are not the one waiting)
+- in idle (stage: released) -> send reply-ok
+- in critical section (stage: held) -> store request and send reply-ok as soon as leaving critical section
+- waiting (stage: wanting) -> compare clocks and store request if yours is lower (if you are not the one waiting)
 */
 func receivedRequestMessage(mutexMessage MessageMutexEntity) {
-	logrus.Infof("[mutex_receive.receivedRequestMessage] state: %s", state)
+	logrus.Infof("[mutex_request.receivedRequestMessage] state: %s", state)
 
 	switch state {
 	case StateReleased:
@@ -23,10 +23,8 @@ func receivedRequestMessage(mutexMessage MessageMutexEntity) {
 	case StateWanting:
 		receiveMessageWanting(mutexMessage)
 	default:
-		logrus.Fatalf("[mutex_receive.receivedRequestMessage] state: %s, could not be identified", state)
+		logrus.Fatalf("[mutex_request.receivedRequestMessage] state: %s, could not be identified", state)
 	}
-
-	logrus.Infof("[mutex_receive.receivedRequestMessage] finished processing request message")
 }
 
 /*
@@ -47,7 +45,7 @@ func receiveMessageWanting(mutexMessage MessageMutexEntity) {
 	if mutexMessage.User != identity.YourUserInformation.Endpoint {
 		// higher clock goes first
 		if mutexMessage.Time < clock {
-			logrus.Infof("[mutex_receive.receiveMessageWanting] my clock is > mutexMessage.Time")
+			logrus.Infof("[mutex_request.receiveMessageWanting] my clock is > mutexMessage.Time")
 			waitingForSendingAnswerBack(mutexMessage)
 		}
 		// else return reply-ok
@@ -61,6 +59,9 @@ func receiveMessageWanting(mutexMessage MessageMutexEntity) {
 
 /*
 waitingForSendingAnswerBack - add request to list of requests to answer back to
+1. add request to replyOkSendingList
+2. wait until it is allowed to send a reply-ok
+3. remove requestChannelInfo form replyOkSendingList
 */
 func waitingForSendingAnswerBack(mutexMessage MessageMutexEntity) {
 	requestChannel := make(chan string)
@@ -68,26 +69,18 @@ func waitingForSendingAnswerBack(mutexMessage MessageMutexEntity) {
 		userEndpoint: mutexMessage.User,
 		channel:      requestChannel,
 	}
+
+	// 1. add request to replyOkSendingList
 	replyOkSendingList = append(replyOkSendingList, userSendingChan)
-	// wait until it is allowed to send a reply-ok
-	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] wait until it is allowed to send a reply-ok to: %s", mutexMessage.User)
+
+	// 2. wait until it is allowed to send a reply-ok
+	logrus.Infof("[mutex_request.waitingForSendingAnswerBack] wait until it is allowed to send a reply-ok to: %s", mutexMessage.User)
 	msg := <-requestChannel
-	logrus.Infof("[mutex_receive.waitingForSendingAnswerBack] received: %s from channel", msg)
-	// remove requestChannelInfo form mutexSendRequests
+	logrus.Infof("[mutex_request.waitingForSendingAnswerBack] received: %s from channel", msg)
+
+	// 3. remove requestChannelInfo form replyOkSendingList
 	rmReplyOkSendingUser(userSendingChan)
 
-}
-
-/*
-getReplyOkMessage - return reply-ok message
-*/
-func getReplyOkMessage() MessageMutexEntity {
-	return MessageMutexEntity{
-		Msg:   ReplyOKMessage,
-		Time:  clock,
-		Reply: mutexYourReply,
-		User:  mutexYourUser,
-	}
 }
 
 /*
