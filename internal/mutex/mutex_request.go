@@ -82,13 +82,3 @@ func waitingForSendingAnswerBack(mutexMessage MessageMutexEntity) {
 	rmReplyOkSendingUser(userSendingChan)
 
 }
-
-/*
-STRUCTS
-*/
-
-// channel to manage user reponses
-type userSendingChannel struct {
-	userEndpoint string
-	channel      chan string
-}
