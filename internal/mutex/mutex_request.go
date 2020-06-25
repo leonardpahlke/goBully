@@ -44,7 +44,7 @@ func receiveMessageWanting(mutexMessage MessageMutexEntity) {
 	// you are in the waiting state and therefore sending a response-ok message to your request
 	if mutexMessage.User != identity.YourUserInformation.Endpoint {
 		// higher clock goes first
-		if mutexMessage.Time < clock {
+		if mutexMessage.Time > clock {
 			logrus.Infof("[mutex_request.receiveMessageWanting] my clock is > mutexMessage.Time")
 			waitingForSendingAnswerBack(mutexMessage)
 		}

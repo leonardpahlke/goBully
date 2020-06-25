@@ -27,7 +27,7 @@ func receivedReplyOkMessage(mutexMessage MessageMutexEntity) {
 
 			if userRequestChannel.user.Endpoint == mutexMessage.User {
 				// 3. notify waiting task to stop sending heartbeats
-				replyOkWaitingRoom.allReplyOkReceived <- ReplyOKMessage
+				userRequestChannel.channel <- ReplyOKMessage
 
 				// 4. if last user answered - send message through channel allReplyOkReceived to notify waiting task
 				if requestsNeeded <= 1 {
